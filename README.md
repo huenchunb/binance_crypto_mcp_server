@@ -1,81 +1,81 @@
 # Binance Crypto MCP Server
 
-Un servidor MCP (Model Context Protocol) que permite obtener información de criptomonedas a través de la API pública de Binance, incluyendo análisis histórico completo y datos de ciclos de mercado.
+A Model Context Protocol (MCP) server that provides cryptocurrency information through Binance's public API, including comprehensive historical analysis and market cycle data.
 
-## Características
+## Features
 
-- 🚀 Obtener precio actual de cualquier criptomoneda
-- 📊 Estadísticas completas de 24 horas (precio, volumen, cambios)
-- 🔍 Búsqueda de símbolos de criptomonedas
-- 📈 Top criptomonedas por volumen de trading
-- 📉 **Datos históricos básicos** (hasta 1000 períodos)
-- 🕰️ **Datos históricos extendidos** (hasta 12 años con análisis completo)
-- 🔄 **Múltiples marcos temporales** (diario, semanal, mensual)
-- 🎯 **Análisis de ciclos de mercado** y volatilidad
-- 📊 **Análisis de rendimiento** y estadísticas avanzadas
-- ⚡ API no autenticada (sin límites estrictos)
-- 🛡️ Validación de datos con Zod
-- 💾 Compatible con TypeScript
+- 🚀 Get current price of any cryptocurrency
+- 📊 Complete 24-hour statistics (price, volume, changes)
+- 🔍 Search cryptocurrency symbols
+- 📈 Top cryptocurrencies by trading volume
+- 📉 **Basic historical data** (up to 1000 periods)
+- 🕰️ **Extended historical data** (up to 12 years with complete analysis)
+- 🔄 **Multiple timeframes** (daily, weekly, monthly)
+- 🎯 **Market cycle analysis** and volatility metrics
+- 📊 **Performance analysis** and advanced statistics
+- ⚡ Non-authenticated API (no strict limits)
+- 🛡️ Data validation with Zod
+- 💾 TypeScript compatible
 
-## Instalación
+## Installation
 
-### Opción 1: Instalación directa con npx
+### Option 1: Direct installation with npx
 
 ```bash
 npx binance-crypto-mcp-server
 ```
 
-### Opción 2: Instalación desde código fuente
+### Option 2: Install from source code
 
-1. Clona el repositorio:
+1. Clone the repository:
 ```bash
-git clone <tu-repo>
+git clone <your-repo>
 cd binance-crypto-mcp-server
 ```
 
-2. Instala las dependencias:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Compila el proyecto:
+3. Build the project:
 ```bash
 npm run build
 ```
 
-4. Ejecuta el servidor:
+4. Run the server:
 ```bash
 npm start
 ```
 
-### Opción 3: Modo desarrollo
+### Option 3: Development mode
 
 ```bash
 npm run dev
 ```
 
-### Opción 4: Modo debugging
+### Option 4: Debug mode
 
 ```bash
-# Con breakpoint automático
+# With automatic breakpoint
 npm run debug:brk
 
-# Sin breakpoint
+# Without breakpoint
 npm run debug
 
-# Testing automatizado
+# Automated testing
 npm run debug:test
 ```
 
-## Herramientas Disponibles
+## Available Tools
 
 ### 1. `get_crypto_price`
-Obtiene el precio actual de una criptomoneda.
+Gets the current price of a cryptocurrency.
 
-**Parámetros:**
-- `symbol` (string): Símbolo de la criptomoneda (ej: BTCUSDT, ETHUSDT)
+**Parameters:**
+- `symbol` (string): Cryptocurrency symbol (e.g., BTCUSDT, ETHUSDT)
 
-**Ejemplo de respuesta:**
+**Example response:**
 ```json
 {
   "symbol": "BTCUSDT",
@@ -85,12 +85,12 @@ Obtiene el precio actual de una criptomoneda.
 ```
 
 ### 2. `get_crypto_24hr_stats`
-Obtiene estadísticas completas de 24 horas para una criptomoneda.
+Gets complete 24-hour statistics for a cryptocurrency.
 
-**Parámetros:**
-- `symbol` (string): Símbolo de la criptomoneda
+**Parameters:**
+- `symbol` (string): Cryptocurrency symbol
 
-**Ejemplo de respuesta:**
+**Example response:**
 ```json
 {
   "symbol": "BTCUSDT",
@@ -107,12 +107,12 @@ Obtiene estadísticas completas de 24 horas para una criptomoneda.
 ```
 
 ### 3. `search_crypto_symbols`
-Busca símbolos de criptomonedas que coincidan con la consulta.
+Searches for cryptocurrency symbols that match the query.
 
-**Parámetros:**
-- `query` (string): Texto a buscar
+**Parameters:**
+- `query` (string): Text to search for
 
-**Ejemplo de respuesta:**
+**Example response:**
 ```json
 {
   "query": "BTC",
@@ -131,12 +131,12 @@ Busca símbolos de criptomonedas que coincidan con la consulta.
 ```
 
 ### 4. `get_top_cryptos_by_volume`
-Obtiene las criptomonedas con mayor volumen de trading.
+Gets cryptocurrencies with the highest trading volume.
 
-**Parámetros:**
-- `limit` (number, opcional): Número de resultados (1-50, default: 10)
+**Parameters:**
+- `limit` (number, optional): Number of results (1-50, default: 10)
 
-**Ejemplo de respuesta:**
+**Example response:**
 ```json
 {
   "top_cryptos_by_24h_volume": [
@@ -154,14 +154,14 @@ Obtiene las criptomonedas con mayor volumen de trading.
 ```
 
 ### 5. `get_historical_data`
-Obtiene datos históricos básicos de una criptomoneda (hasta 1000 períodos).
+Gets basic historical data for a cryptocurrency (up to 1000 periods).
 
-**Parámetros:**
-- `symbol` (string): Símbolo de la criptomoneda
-- `interval` (string, opcional): Marco temporal - '1d', '1w', '1M' (default: '1d')
-- `limit` (number, opcional): Número de períodos (máximo 1000, default: 365)
+**Parameters:**
+- `symbol` (string): Cryptocurrency symbol
+- `interval` (string, optional): Timeframe - '1d', '1w', '1M' (default: '1d')
+- `limit` (number, optional): Number of periods (max 1000, default: 365)
 
-**Ejemplo de respuesta:**
+**Example response:**
 ```json
 {
   "symbol": "BTCUSDT",
@@ -194,14 +194,14 @@ Obtiene datos históricos básicos de una criptomoneda (hasta 1000 períodos).
 ```
 
 ### 6. `get_extended_historical_data`
-Obtiene datos históricos extendidos con análisis completo de ciclos de mercado (hasta 12 años).
+Gets extended historical data with complete market cycle analysis (up to 12 years).
 
-**Parámetros:**
-- `symbol` (string): Símbolo de la criptomoneda
-- `interval` (string, opcional): Marco temporal - '1d', '1w', '1M' (default: '1d')  
-- `yearsBack` (number, opcional): Años hacia atrás (1-12, default: 4)
+**Parameters:**
+- `symbol` (string): Cryptocurrency symbol
+- `interval` (string, optional): Timeframe - '1d', '1w', '1M' (default: '1d')  
+- `yearsBack` (number, optional): Years back (1-12, default: 4)
 
-**Ejemplo de respuesta:**
+**Example response:**
 ```json
 {
   "symbol": "BTCUSDT",
@@ -250,20 +250,20 @@ Obtiene datos históricos extendidos con análisis completo de ciclos de mercado
 }
 ```
 
-## Uso con Claude Desktop
+## Usage with Claude Desktop
 
-Para usar este servidor con Claude Desktop, agrega la configuración en tu archivo de configuración MCP:
+To use this server with Claude Desktop, add the configuration to your MCP configuration file:
 
 ### Windows:
-Archivo: `%APPDATA%\Claude\claude_desktop_config.json`
+File: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ### macOS:
-Archivo: `~/Library/Application Support/Claude/claude_desktop_config.json`
+File: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 ### Linux:
-Archivo: `~/.config/Claude/claude_desktop_config.json`
+File: `~/.config/Claude/claude_desktop_config.json`
 
-**Configuración:**
+**Configuration:**
 ```json
 {
   "mcpServers": {
@@ -275,7 +275,7 @@ Archivo: `~/.config/Claude/claude_desktop_config.json`
 }
 ```
 
-O si lo instalaste localmente:
+Or if installed locally:
 
 ```json
 {
@@ -288,171 +288,149 @@ O si lo instalaste localmente:
 }
 ```
 
-## Ejemplos de Uso
+## Usage Examples
 
-### **Datos básicos en tiempo real:**
+### **Real-time basic data:**
 ```
-"¿Cuál es el precio actual de Bitcoin?"
-→ Usa: get_crypto_price con symbol: "BTCUSDT"
+"What is the current price of Bitcoin?"
+→ Use: get_crypto_price with symbol: "BTCUSDT"
 
-"Muéstrame las estadísticas de 24h de Ethereum"
-→ Usa: get_crypto_24hr_stats con symbol: "ETHUSDT"
-```
-
-### **Búsqueda y ranking:**
-```
-"Busca todas las monedas relacionadas con 'SHIB'"
-→ Usa: search_crypto_symbols con query: "SHIB"
-
-"¿Cuáles son las top 5 criptos por volumen?"
-→ Usa: get_top_cryptos_by_volume con limit: 5
+"Show me Ethereum's 24h statistics"
+→ Use: get_crypto_24hr_stats with symbol: "ETHUSDT"
 ```
 
-### **Análisis histórico básico:**
+### **Search and ranking:**
 ```
-"¿Cómo se comportó Bitcoin en los últimos 100 días?"
-→ Usa: get_historical_data con symbol: "BTCUSDT", limit: 100
+"Find all coins related to 'SHIB'"
+→ Use: search_crypto_symbols with query: "SHIB"
 
-"Muéstrame datos semanales de Ethereum del último año"
-→ Usa: get_historical_data con symbol: "ETHUSDT", interval: "1w", limit: 52
-```
-
-### **Análisis de ciclos y tendencias:**
-```
-"Analiza los ciclos completos de Bitcoin de los últimos 4 años"
-→ Usa: get_extended_historical_data con symbol: "BTCUSDT", yearsBack: 4
-
-"¿En qué fase del ciclo está Ethereum según su historial de 6 años?"
-→ Usa: get_extended_historical_data con symbol: "ETHUSDT", yearsBack: 6
-
-"Compara la volatilidad de Bitcoin usando datos mensuales de 8 años"
-→ Usa: get_extended_historical_data con symbol: "BTCUSDT", interval: "1M", yearsBack: 8
+"What are the top 5 cryptos by volume?"
+→ Use: get_top_cryptos_by_volume with limit: 5
 ```
 
-## Símbolos Populares
+### **Basic historical analysis:**
+```
+"How did Bitcoin perform in the last 100 days?"
+→ Use: get_historical_data with symbol: "BTCUSDT", limit: 100
 
-### **Top Criptomonedas:**
+"Show me Ethereum's weekly data for the past year"
+→ Use: get_historical_data with symbol: "ETHUSDT", interval: "1w", limit: 52
+```
+
+### **Cycle and trend analysis:**
+```
+"Analyze Bitcoin's complete cycles over the last 4 years"
+→ Use: get_extended_historical_data with symbol: "BTCUSDT", yearsBack: 4
+
+"What cycle phase is Ethereum in according to its 6-year history?"
+→ Use: get_extended_historical_data with symbol: "ETHUSDT", yearsBack: 6
+
+"Compare Bitcoin's volatility using 8 years of monthly data"
+→ Use: get_extended_historical_data with symbol: "BTCUSDT", interval: "1M", yearsBack: 8
+```
+
+## Popular Symbols
+
+### **Top Cryptocurrencies:**
 - **Bitcoin**: BTCUSDT
 - **Ethereum**: ETHUSDT
 - **BNB**: BNBUSDT
 - **Solana**: SOLUSDT
 - **XRP**: XRPUSDT
 
-### **Altcoins Populares:**
+### **Popular Altcoins:**
 - **Cardano**: ADAUSDT
 - **Dogecoin**: DOGEUSDT
 - **Polygon**: MATICUSDT
 - **Chainlink**: LINKUSDT
 - **Avalanche**: AVAXUSDT
 
-### **Tokens DeFi:**
+### **DeFi Tokens:**
 - **Uniswap**: UNIUSDT
 - **Aave**: AAVEUSDT
 - **Compound**: COMPUSDT
 - **SushiSwap**: SUSHIUSDT
 
-## Marcos Temporales Disponibles
+## Available Timeframes
 
-| Intervalo | Descripción | Mejor para |
-|-----------|-------------|------------|
-| `1d` | Diario | Análisis de tendencias de corto-mediano plazo |
-| `1w` | Semanal | Análisis de ciclos y patrones estacionales |
-| `1M` | Mensual | Análisis macro y ciclos de largo plazo |
+| Interval | Description | Best for |
+|----------|-------------|----------|
+| `1d` | Daily | Short-medium term trend analysis |
+| `1w` | Weekly | Cycle analysis and seasonal patterns |
+| `1M` | Monthly | Macro analysis and long-term cycles |
 
-## Limitaciones
+## Limitations
 
-- Usa la API pública de Binance (sin autenticación)
-- Límites de rate limiting de Binance (generalmente 1200 requests/minuto)
-- Los datos pueden tener un ligero retraso (generalmente <1 segundo)
-- Algunos símbolos muy nuevos pueden no tener historial completo
-- Datos históricos limitados por la disponibilidad en Binance
-- Para análisis de 8+ años, algunos tokens pueden no tener datos suficientes
+- Uses Binance's public API (no authentication required)
+- Subject to Binance rate limiting (typically 1200 requests/minute)
+- Data may have slight delay (usually <1 second)
+- Some very new symbols may not have complete history
+- Historical data limited by Binance availability
+- For 8+ year analysis, some tokens may not have sufficient data
 
-## Desarrollo
+## Development
 
-### Estructura del proyecto
+### Project structure
 ```
 src/
-├── index.ts          # Servidor MCP principal
-├── binance-client.ts # Cliente para API de Binance
-scripts/
-├── test-mcp.js      # Script de testing para debugging
-package.json          # Configuración del paquete
-tsconfig.json        # Configuración de TypeScript
-README.md           # Documentación
+├── index.ts          # Main MCP server
+├─── helpers
+  ├─── binance-client.ts # Binance API client
+package.json          # Package configuration
+tsconfig.json        # TypeScript configuration
+README.md            # Documentation
 ```
 
-### Scripts disponibles
-- `npm run build`: Compila TypeScript a JavaScript
-- `npm run dev`: Ejecuta en modo desarrollo con ts-node
-- `npm start`: Ejecuta la versión compilada
-- `npm run debug`: Ejecuta con inspector de Node.js
-- `npm run debug:brk`: Ejecuta con inspector y breakpoint automático
-- `npm run debug:test`: Testing automatizado con debugging
-- `npm run prepare`: Compila antes de publicar
+### Available scripts
+- `npm run build`: Compile TypeScript to JavaScript
+- `npm run dev`: Run in development mode with ts-node
+- `npm start`: Run compiled version
+- `npm run prepare`: Compile before publishing
 
-### Debugging
-Para debuggear el servidor:
+## Advanced Use Cases
 
-1. **Compilar y ejecutar con inspector:**
-   ```bash
-   npm run build
-   npm run debug:brk
-   ```
+### **Investment Analysis:**
+- Compare historical performance of multiple assets
+- Identify market cycles for entry/exit timing
+- Volatility analysis for risk management
 
-2. **Abrir Chrome DevTools:**
-   - Ve a `chrome://inspect`
-   - Haz clic en "Open dedicated DevTools for Node"
+### **Market Research:**
+- Seasonal patterns across different timeframes
+- Correlations between different cryptocurrencies
+- Post-event analysis (halvings, updates, etc.)
 
-3. **O usar el script de testing:**
-   ```bash
-   npm run debug:test
-   ```
+### **Algorithmic Trading:**
+- Strategy backtesting with historical data
+- Identification of historical support and resistance levels
+- Volume and momentum analysis
 
-## Casos de Uso Avanzados
+## Contributing
 
-### **Análisis de Inversión:**
-- Comparar rendimiento histórico de múltiples assets
-- Identificar ciclos de mercado para timing de entrada/salida
-- Análisis de volatilidad para gestión de riesgo
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-functionality`)
+3. Commit your changes (`git commit -am 'Add new functionality'`)
+4. Push to the branch (`git push origin feature/new-functionality`)
+5. Open a Pull Request
 
-### **Investigación de Mercado:**
-- Patrones estacionales en diferentes marcos temporales
-- Correlaciones entre diferentes criptomonedas
-- Análisis post-eventos (halvings, actualizaciones, etc.)
+## License
 
-### **Trading Algorítmico:**
-- Backtesting de estrategias con datos históricos
-- Identificación de soportes y resistencias históricas
-- Análisis de volumen y momentum
+MIT License - see LICENSE file for details.
 
-## Contribución
+## Support
 
-1. Fork el repositorio
-2. Crea una branch para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Haz commit de tus cambios (`git commit -am 'Agrega nueva funcionalidad'`)
-4. Push a la branch (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
-## Licencia
-
-MIT License - ver archivo LICENSE para más detalles.
-
-## Soporte
-
-Para reportar bugs o solicitar features:
-- Abre un issue en GitHub
-- Incluye ejemplos de uso y logs de error si aplica
-- Especifica la versión de Node.js y del servidor
+To report bugs or request features:
+- Open an issue on GitHub
+- Include usage examples and error logs if applicable
+- Specify Node.js version and server version
 
 ## Changelog
 
 ### v1.0.0
-- ✅ Herramientas básicas de precio y estadísticas
-- ✅ Búsqueda de símbolos
-- ✅ Top criptos por volumen
-- ✅ Datos históricos básicos (hasta 1000 períodos)
-- ✅ Análisis histórico extendido (hasta 12 años)
-- ✅ Análisis de ciclos de mercado y volatilidad
-- ✅ Múltiples marcos temporales (diario, semanal, mensual)
-- ✅ Modo debugging y testing automatizado
+- ✅ Basic price and statistics tools
+- ✅ Symbol search functionality
+- ✅ Top cryptos by volume
+- ✅ Basic historical data (up to 1000 periods)
+- ✅ Extended historical analysis (up to 12 years)
+- ✅ Market cycle and volatility analysis
+- ✅ Multiple timeframes (daily, weekly, monthly)
+- ✅ Debug mode and automated testing

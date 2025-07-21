@@ -1,0 +1,33 @@
+{
+  "name": "binance-crypto-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server para obtener información de criptomonedas usando la API de Binance",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "prepare": "npm run build"
+  },
+  "bin": {
+    "binance-crypto-mcp": "./dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "binance",
+    "cryptocurrency",
+    "api"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "axios": "^1.6.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  }
+}

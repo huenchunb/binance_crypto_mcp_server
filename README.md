@@ -135,6 +135,153 @@ Obtiene las criptomonedas con mayor volumen de trading.
 }
 ```
 
+### 5. `get_historical_data`
+Obtiene datos históricos básicos de una criptomoneda (hasta 1000 períodos).
+
+**Parámetros:**
+- `symbol` (string): Símbolo de la criptomoneda
+- `interval` (string, opcional): Marco temporal - '1d', '1w', '1M' (default: '1d')
+- `limit` (number, opcional): Número de períodos (máximo 1# Binance Crypto MCP Server
+
+Un servidor MCP (Model Context Protocol) que permite obtener información de criptomonedas a través de la API pública de Binance.
+
+## Características
+
+- 🚀 Obtener precio actual de cualquier criptomoneda
+- 📊 Estadísticas completas de 24 horas (precio, volumen, cambios)
+- 🔍 Búsqueda de símbolos de criptomonedas
+- 📈 Top criptomonedas por volumen de trading
+- 📉 **Datos históricos básicos** (hasta 1000 períodos)
+- 🕰️ **Datos históricos extendidos** (hasta 12 años con análisis completo)
+- 🔄 **Múltiples marcos temporales** (diario, semanal, mensual)
+- 🎯 **Análisis de ciclos de mercado** y volatilidad
+- ⚡ API no autenticada (sin límites estrictos)
+- 🛡️ Validación de datos con Zod
+- 💾 Compatible con TypeScript
+
+## Instalación
+
+### Opción 1: Instalación directa con npx
+
+```bash
+npx binance-crypto-mcp-server
+```
+
+### Opción 2: Instalación desde código fuente
+
+1. Clona el repositorio:
+```bash
+git clone <tu-repo>
+cd binance-crypto-mcp-server
+```
+
+2. Instala las dependencias:
+```bash
+npm install
+```
+
+3. Compila el proyecto:
+```bash
+npm run build
+```
+
+4. Ejecuta el servidor:
+```bash
+npm start
+```
+
+### Opción 3: Modo desarrollo
+
+```bash
+npm run dev
+```
+
+## Herramientas Disponibles
+
+### 1. `get_crypto_price`
+Obtiene el precio actual de una criptomoneda.
+
+**Parámetros:**
+- `symbol` (string): Símbolo de la criptomoneda (ej: BTCUSDT, ETHUSDT)
+
+**Ejemplo de respuesta:**
+```json
+{
+  "symbol": "BTCUSDT",
+  "price": "$43,250.75",
+  "raw_price": "43250.75000000"
+}
+```
+
+### 2. `get_crypto_24hr_stats`
+Obtiene estadísticas completas de 24 horas para una criptomoneda.
+
+**Parámetros:**
+- `symbol` (string): Símbolo de la criptomoneda
+
+**Ejemplo de respuesta:**
+```json
+{
+  "symbol": "BTCUSDT",
+  "current_price": "$43,250.75",
+  "price_change_24h": "+$1,250.50",
+  "price_change_percent_24h": "+2.98%",
+  "high_24h": "$44,100.00",
+  "low_24h": "$41,900.25",
+  "volume_24h": "25,430.85 BTC",
+  "quote_volume_24h": "$1,098,456,789",
+  "open_price": "$42,000.25",
+  "trade_count_24h": "890,234"
+}
+```
+
+### 3. `search_crypto_symbols`
+Busca símbolos de criptomonedas que coincidan con la consulta.
+
+**Parámetros:**
+- `query` (string): Texto a buscar
+
+**Ejemplo de respuesta:**
+```json
+{
+  "query": "BTC",
+  "results_count": 15,
+  "symbols": [
+    {
+      "symbol": "BTCUSDT",
+      "base_asset": "BTC",
+      "quote_asset": "USDT",
+      "status": "TRADING",
+      "spot_trading": true,
+      "margin_trading": true
+    }
+  ]
+}
+```
+
+### 4. `get_top_cryptos_by_volume`
+Obtiene las criptomonedas con mayor volumen de trading.
+
+**Parámetros:**
+- `limit` (number, opcional): Número de resultados (1-50, default: 10)
+
+**Ejemplo de respuesta:**
+```json
+{
+  "top_cryptos_by_24h_volume": [
+    {
+      "rank": 1,
+      "symbol": "BTCUSDT",
+      "price": "$43,250.75",
+      "price_change_24h": "+2.98%",
+      "volume_24h_usdt": "$1,098,456,789",
+      "high_24h": "$44,100.00",
+      "low_24h": "$41,900.25"
+    }
+  ]
+}
+```
+
 ## Uso con Claude Desktop
 
 Para usar este servidor con Claude Desktop, agrega la configuración en tu archivo de configuración MCP:

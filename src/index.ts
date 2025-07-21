@@ -84,6 +84,58 @@ class BinanceMCPServer {
                             },
                         },
                     },
+                    {
+                        name: 'get_historical_data',
+                        description: 'Obtiene datos históricos básicos de una criptomoneda (hasta 1000 períodos)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                symbol: {
+                                    type: 'string',
+                                    description: 'Símbolo de la criptomoneda (ej: BTCUSDT)',
+                                },
+                                interval: {
+                                    type: 'string',
+                                    enum: ['1d', '1w', '1M'],
+                                    description: 'Marco temporal: 1d (diario), 1w (semanal), 1M (mensual)',
+                                    default: '1d',
+                                },
+                                limit: {
+                                    type: 'number',
+                                    description: 'Número de períodos a obtener (máximo 1000)',
+                                    default: 365,
+                                },
+                            },
+                            required: ['symbol'],
+                        },
+                    },
+                    {
+                        name: 'get_extended_historical_data',
+                        description: 'Obtiene datos históricos extendidos con análisis completo (hasta 8+ años)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                symbol: {
+                                    type: 'string',
+                                    description: 'Símbolo de la criptomoneda (ej: BTCUSDT)',
+                                },
+                                interval: {
+                                    type: 'string',
+                                    enum: ['1d', '1w', '1M'],
+                                    description: 'Marco temporal: 1d (diario), 1w (semanal), 1M (mensual)',
+                                    default: '1d',
+                                },
+                                yearsBack: {
+                                    type: 'number',
+                                    description: 'Años hacia atrás a obtener (máximo 12 años)',
+                                    default: 4,
+                                    minimum: 1,
+                                    maximum: 12,
+                                },
+                            },
+                            required: ['symbol'],
+                        },
+                    },
                 ] satisfies Tool[],
             };
         });
@@ -215,6 +267,112 @@ class BinanceMCPServer {
                         };
                     }
 
+                    case 'get_historical_data': {
+                        const { symbol, interval = '1d', limit = 365 } = args as {
+                            symbol: string;
+                            interval?: '1d' | '1w' | '1M';
+                            limit?: number;
+                        };
+
+                        const historicalData = await this.binanceClient.getHistoricalData(
+                            symbol,
+                            interval,
+                            Math.min(limit, 1000)
+                        );
+
+                        // Procesar datos para respuesta más legible
+                        const processedData = historicalData.map(kline => ({
+                            date: new Date(kline[0]).toISOString().split('T')[0],
+                            open: parseFloat(kline[1]),
+                            high: parseFloat(kline[2]),
+                            low: parseFloat(kline[3]),
+                            close: parseFloat(kline[4]),
+                            volume: parseFloat(kline[5]),
+                            quote_volume: parseFloat(kline[7]),
+                            trades: kline[8],
+                        }));
+
+                        const firstPrice = processedData[0]?.close || 0;
+                        const lastPrice = processedData[processedData.length - 1]?.close || 0;
+                        const totalReturn = ((lastPrice - firstPrice) / firstPrice) * 100;
+
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: JSON.stringify({
+                                        symbol,
+                                        interval,
+                                        total_periods: processedData.length,
+                                        date_range: {
+                                            start: processedData[0]?.date,
+                                            end: processedData[processedData.length - 1]?.date,
+                                        },
+                                        summary: {
+                                            first_price: `${firstPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+                                            last_price: `${lastPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+                                            total_return: `${totalReturn >= 0 ? '+' : ''}${totalReturn.toFixed(2)}%`,
+                                            all_time_high: `${Math.max(...processedData.map(d => d.high)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+                                            all_time_low: `${Math.min(...processedData.map(d => d.low)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+                                        },
+                                        data: processedData,
+                                    }, null, 2),
+                                },
+                            ],
+                        };
+                    }
+
+                    case 'get_extended_historical_data': {
+                        const { symbol, interval = '1d', yearsBack = 4 } = args as {
+                            symbol: string;
+                            interval?: '1d' | '1w' | '1M';
+                            yearsBack?: number;
+                        };
+
+                        const extendedData = await this.binanceClient.getExtendedHistoricalData(
+                            symbol,
+                            interval,
+                            Math.min(Math.max(yearsBack, 1), 12)
+                        );
+
+                        // Crear resumen ejecutivo
+                        const summary = {
+                            analysis_period: `${extendedData.totalPeriods} ${interval} periods (${extendedData.dateRange.start} to ${extendedData.dateRange.end})`,
+                            price_performance: {
+                                all_time_high: `${extendedData.priceStats.allTimeHigh.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+                                all_time_low: `${extendedData.priceStats.allTimeLow.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+                                current_price: `${extendedData.priceStats.currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+                                total_return: `${extendedData.priceStats.totalReturnPercent >= 0 ? '+' : ''}${extendedData.priceStats.totalReturnPercent.toFixed(2)}%`,
+                                roi_from_ath: `${(((extendedData.priceStats.currentPrice - extendedData.priceStats.allTimeHigh) / extendedData.priceStats.allTimeHigh) * 100).toFixed(2)}%`,
+                            },
+                            volatility_analysis: {
+                                average_daily_change: `${extendedData.volatilityStats.averageDailyChange >= 0 ? '+' : ''}${extendedData.volatilityStats.averageDailyChange.toFixed(3)}%`,
+                                volatility_index: `${extendedData.volatilityStats.volatility.toFixed(3)}%`,
+                                maximum_gain: `+${extendedData.volatilityStats.maxGain.toFixed(2)}%`,
+                                maximum_loss: `${extendedData.volatilityStats.maxLoss.toFixed(2)}%`,
+                            },
+                            market_cycles: this.analyzeMarketCycles(extendedData.data),
+                        };
+
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: JSON.stringify({
+                                        symbol: extendedData.symbol,
+                                        interval: extendedData.interval,
+                                        extended_analysis: summary,
+                                        historical_data: {
+                                            total_records: extendedData.data.length,
+                                            sample_recent_data: extendedData.data.slice(-30), // Últimos 30 períodos como muestra
+                                            // Para datos completos, usar: full_data: extendedData.data
+                                        },
+                                    }, null, 2),
+                                },
+                            ],
+                        };
+                    }
+
                     default:
                         throw new Error(`Herramienta desconocida: ${name}`);
                 }
@@ -230,6 +388,41 @@ class BinanceMCPServer {
                 };
             }
         });
+    }
+
+    private analyzeMarketCycles(data: any[]): any {
+        if (data.length < 100) return { note: "Datos insuficientes para análisis de ciclos" };
+
+        const prices = data.map(d => d.close);
+        const highs: number[] = [];
+        const lows: number[] = [];
+
+        // Encontrar máximos y mínimos locales
+        for (let i = 20; i < prices.length - 20; i++) {
+            const current = prices[i];
+            const prevWindow = prices.slice(i - 20, i);
+            const nextWindow = prices.slice(i + 1, i + 21);
+
+            if (current > Math.max(...prevWindow) && current > Math.max(...nextWindow)) {
+                highs.push(current);
+            }
+            if (current < Math.min(...prevWindow) && current < Math.min(...nextWindow)) {
+                lows.push(current);
+            }
+        }
+
+        const avgHigh = highs.reduce((a, b) => a + b, 0) / highs.length || 0;
+        const avgLow = lows.reduce((a, b) => a + b, 0) / lows.length || 0;
+        const currentPrice = prices[prices.length - 1];
+
+        return {
+            cycle_highs_found: highs.length,
+            cycle_lows_found: lows.length,
+            average_cycle_high: `${avgHigh.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+            average_cycle_low: `${avgLow.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`,
+            current_position: currentPrice > avgHigh ? "Above average highs" :
+                currentPrice < avgLow ? "Below average lows" : "In normal range",
+        };
     }
 
     async run() {

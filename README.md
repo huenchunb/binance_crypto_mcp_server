@@ -54,19 +54,6 @@ npm start
 npm run dev
 ```
 
-### Option 4: Debug mode
-
-```bash
-# With automatic breakpoint
-npm run debug:brk
-
-# Without breakpoint
-npm run debug
-
-# Automated testing
-npm run debug:test
-```
-
 ## Available Tools
 
 ### 1. `get_crypto_price`

@@ -6,6 +6,7 @@ import {
     Tool
 } from '@modelcontextprotocol/sdk/types.js';
 import { BinanceClient } from './helpers/binance-client';
+import { TechnicalIndicators, PriceData } from './helpers/technical-indicators';
 
 class BinanceMCPServer {
     private server: Server;
@@ -131,6 +132,33 @@ class BinanceMCPServer {
                                     default: 4,
                                     minimum: 1,
                                     maximum: 12,
+                                },
+                            },
+                            required: ['symbol'],
+                        },
+                    },
+                    {
+                        name: 'get_technical_analysis',
+                        description: 'Realiza análisis técnico completo con indicadores RSI, MACD y medias móviles',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                symbol: {
+                                    type: 'string',
+                                    description: 'Símbolo de la criptomoneda (ej: BTCUSDT)',
+                                },
+                                interval: {
+                                    type: 'string',
+                                    enum: ['1d', '1w', '1M'],
+                                    description: 'Marco temporal: 1d (diario), 1w (semanal), 1M (mensual)',
+                                    default: '1d',
+                                },
+                                periods: {
+                                    type: 'number',
+                                    description: 'Número de períodos para análisis (mínimo 200, máximo 500)',
+                                    default: 200,
+                                    minimum: 200,
+                                    maximum: 500,
                                 },
                             },
                             required: ['symbol'],
@@ -373,6 +401,114 @@ class BinanceMCPServer {
                         };
                     }
 
+                    case 'get_technical_analysis': {
+                        const { symbol, interval = '1d', periods = 200 } = args as {
+                            symbol: string;
+                            interval?: '1d' | '1w' | '1M';
+                            periods?: number;
+                        };
+
+                        // Validar y ajustar parámetros
+                        const validPeriods = Math.min(Math.max(periods, 200), 500);
+
+                        // Obtener datos históricos para análisis técnico
+                        const historicalData = await this.binanceClient.getHistoricalData(
+                            symbol,
+                            interval,
+                            validPeriods
+                        );
+
+                        // Convertir datos al formato requerido por TechnicalIndicators
+                        const priceData: PriceData[] = historicalData.map(kline => ({
+                            close: parseFloat(kline[4]),  // precio de cierre
+                            high: parseFloat(kline[2]),   // precio máximo
+                            low: parseFloat(kline[3]),    // precio mínimo
+                            volume: parseFloat(kline[5])  // volumen
+                        }));
+
+                        // Realizar análisis técnico completo
+                        const technicalAnalysis = TechnicalIndicators.performCompleteAnalysis(
+                            priceData,
+                            symbol
+                        );
+
+                        // Formatear respuesta con explicaciones detalladas
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: JSON.stringify({
+                                        analysis_summary: {
+                                            symbol: technicalAnalysis.symbol,
+                                            current_price: `${technicalAnalysis.currentPrice.toLocaleString('en-US', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 8
+                                            })}`,
+                                            overall_signal: technicalAnalysis.overallSignal,
+                                            confidence: `${technicalAnalysis.confidence}%`,
+                                            analysis_date: technicalAnalysis.timestamp,
+                                            data_period: `${validPeriods} ${interval} periods`
+                                        },
+                                        rsi_analysis: {
+                                            value: Math.round(technicalAnalysis.rsi.rsi * 100) / 100,
+                                            signal: technicalAnalysis.rsi.signal,
+                                            strength: technicalAnalysis.rsi.strength,
+                                            interpretation: this.interpretRSI(technicalAnalysis.rsi)
+                                        },
+                                        macd_analysis: {
+                                            macd_line: Math.round(technicalAnalysis.macd.macd * 10000) / 10000,
+                                            signal_line: Math.round(technicalAnalysis.macd.signal * 10000) / 10000,
+                                            histogram: Math.round(technicalAnalysis.macd.histogram * 10000) / 10000,
+                                            trend: technicalAnalysis.macd.trend,
+                                            crossover: technicalAnalysis.macd.crossover,
+                                            interpretation: this.interpretMACD(technicalAnalysis.macd)
+                                        },
+                                        moving_averages_analysis: {
+                                            ma20: {
+                                                sma: `${technicalAnalysis.movingAverages.ma20.sma.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 8
+                                                })}`,
+                                                ema: `${technicalAnalysis.movingAverages.ma20.ema.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 8
+                                                })}`,
+                                                trend: technicalAnalysis.movingAverages.ma20.trend,
+                                                position: technicalAnalysis.movingAverages.ma20.position
+                                            },
+                                            ma50: {
+                                                sma: `${technicalAnalysis.movingAverages.ma50.sma.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 8
+                                                })}`,
+                                                ema: `${technicalAnalysis.movingAverages.ma50.ema.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 8
+                                                })}`,
+                                                trend: technicalAnalysis.movingAverages.ma50.trend,
+                                                position: technicalAnalysis.movingAverages.ma50.position
+                                            },
+                                            ma200: {
+                                                sma: `${technicalAnalysis.movingAverages.ma200.sma.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 8
+                                                })}`,
+                                                ema: `${technicalAnalysis.movingAverages.ma200.ema.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 8
+                                                })}`,
+                                                trend: technicalAnalysis.movingAverages.ma200.trend,
+                                                position: technicalAnalysis.movingAverages.ma200.position
+                                            },
+                                            interpretation: this.interpretMovingAverages(technicalAnalysis.movingAverages)
+                                        },
+                                        trading_recommendations: this.generateTradingRecommendations(technicalAnalysis)
+                                    }, null, 2),
+                                },
+                            ],
+                        };
+                    }
+
                     default:
                         throw new Error(`Herramienta desconocida: ${name}`);
                 }
@@ -423,6 +559,179 @@ class BinanceMCPServer {
             current_position: currentPrice > avgHigh ? "Above average highs" :
                 currentPrice < avgLow ? "Below average lows" : "In normal range",
         };
+    }
+
+    // === Métodos auxiliares para interpretación de indicadores técnicos ===
+
+    /**
+     * Interpreta los valores del RSI y genera recomendaciones
+     */
+    private interpretRSI(rsi: any): string {
+        const value = rsi.rsi;
+        
+        if (value >= 80) {
+            return `RSI extremadamente alto (${value.toFixed(2)}). Mercado muy sobrecomprado, alta probabilidad de corrección bajista inminente.`;
+        } else if (value >= 70) {
+            return `RSI alto (${value.toFixed(2)}). Mercado sobrecomprado, considerar tomar ganancias o esperar corrección.`;
+        } else if (value <= 20) {
+            return `RSI extremadamente bajo (${value.toFixed(2)}). Mercado muy sobrevendido, alta probabilidad de rebote alcista.`;
+        } else if (value <= 30) {
+            return `RSI bajo (${value.toFixed(2)}). Mercado sobrevendido, posible oportunidad de compra si se confirma con otros indicadores.`;
+        } else if (value >= 45 && value <= 55) {
+            return `RSI neutral (${value.toFixed(2)}). Equilibrio entre compradores y vendedores, mercado en consolidación.`;
+        } else {
+            return `RSI en rango normal (${value.toFixed(2)}). Sin señales extremas, seguir tendencia principal.`;
+        }
+    }
+
+    /**
+     * Interpreta los valores del MACD y genera recomendaciones
+     */
+    private interpretMACD(macd: any): string {
+        let interpretation = "";
+        
+        // Interpretar cruce
+        if (macd.crossover === 'BULLISH_CROSSOVER') {
+            interpretation += "Señal alcista: MACD acaba de cruzar por encima de la línea señal. ";
+        } else if (macd.crossover === 'BEARISH_CROSSOVER') {
+            interpretation += "Señal bajista: MACD acaba de cruzar por debajo de la línea señal. ";
+        }
+        
+        // Interpretar tendencia
+        if (macd.trend === 'BULLISH') {
+            interpretation += "MACD en territorio positivo, indicando momentum alcista. ";
+        } else if (macd.trend === 'BEARISH') {
+            interpretation += "MACD en territorio negativo, indicando momentum bajista. ";
+        }
+        
+        // Interpretar histograma
+        if (macd.histogram > 0) {
+            interpretation += "Histograma positivo sugiere fortalecimiento del momentum.";
+        } else {
+            interpretation += "Histograma negativo sugiere debilitamiento del momentum.";
+        }
+        
+        return interpretation;
+    }
+
+    /**
+     * Interpreta las medias móviles y su configuración
+     */
+    private interpretMovingAverages(movingAverages: any): string {
+        const ma20 = movingAverages.ma20;
+        const ma50 = movingAverages.ma50;
+        const ma200 = movingAverages.ma200;
+        
+        let interpretation = "";
+        
+        // Analizar configuración de medias móviles
+        if (ma20.ema > ma50.ema && ma50.ema > ma200.ema) {
+            interpretation += "Configuración alcista: EMA20 > EMA50 > EMA200. Tendencia alcista confirmada. ";
+        } else if (ma20.ema < ma50.ema && ma50.ema < ma200.ema) {
+            interpretation += "Configuración bajista: EMA20 < EMA50 < EMA200. Tendencia bajista confirmada. ";
+        } else {
+            interpretation += "Medias móviles entrelazadas, mercado en consolidación o cambio de tendencia. ";
+        }
+        
+        // Analizar posición del precio
+        if (ma20.position === 'ABOVE' && ma50.position === 'ABOVE' && ma200.position === 'ABOVE') {
+            interpretation += "Precio por encima de todas las medias móviles, fuerte señal alcista.";
+        } else if (ma20.position === 'BELOW' && ma50.position === 'BELOW' && ma200.position === 'BELOW') {
+            interpretation += "Precio por debajo de todas las medias móviles, fuerte señal bajista.";
+        } else {
+            interpretation += "Precio con comportamiento mixto respecto a las medias móviles.";
+        }
+        
+        return interpretation;
+    }
+
+    /**
+     * Genera recomendaciones de trading basadas en el análisis completo
+     */
+    private generateTradingRecommendations(analysis: any): any {
+        const recommendations = {
+            action: analysis.overallSignal,
+            risk_level: this.calculateRiskLevel(analysis),
+            entry_strategy: this.generateEntryStrategy(analysis),
+            exit_strategy: this.generateExitStrategy(analysis),
+            risk_management: this.generateRiskManagement(analysis),
+            market_context: this.generateMarketContext(analysis)
+        };
+        
+        return recommendations;
+    }
+    
+    private calculateRiskLevel(analysis: any): string {
+        const confidence = analysis.confidence;
+        
+        if (confidence >= 80) {
+            return "BAJO - Alta confianza en la señal";
+        } else if (confidence >= 60) {
+            return "MEDIO - Confianza moderada, usar confirmaciones adicionales";
+        } else if (confidence >= 40) {
+            return "ALTO - Baja confianza, considerar esperar";
+        } else {
+            return "MUY ALTO - Señales contradictorias, evitar posiciones";
+        }
+    }
+    
+    private generateEntryStrategy(analysis: any): string {
+        const signal = analysis.overallSignal;
+        
+        switch (signal) {
+            case 'STRONG_BUY':
+                return "Entrada agresiva recomendada. Considerar compra inmediata con confirmación de volumen.";
+            case 'BUY':
+                return "Entrada gradual recomendada. Considerar compra en pullbacks o confirmación adicional.";
+            case 'STRONG_SELL':
+                return "Salida o venta recomendada. Considerar venta inmediata o posición corta.";
+            case 'SELL':
+                return "Reducir exposición. Considerar toma de ganancias parcial o evitar nuevas compras.";
+            default:
+                return "Mantener posición actual. Esperar señales más claras antes de actuar.";
+        }
+    }
+    
+    private generateExitStrategy(analysis: any): string {
+        const rsi = analysis.rsi.rsi;
+        const macdTrend = analysis.macd.trend;
+        
+        if (rsi >= 75 && macdTrend === 'BULLISH') {
+            return "Considerar toma de ganancias parcial. Mercado sobrecomprado pero con momentum.";
+        } else if (rsi <= 25 && macdTrend === 'BEARISH') {
+            return "Posible oportunidad de compra. Mercado sobrevendido con momentum bajista debilitándose.";
+        } else {
+            return "Seguir plan de trading establecido. Sin señales extremas de salida.";
+        }
+    }
+    
+    private generateRiskManagement(analysis: any): string {
+        const confidence = analysis.confidence;
+        
+        if (confidence >= 70) {
+            return "Stop loss ajustado: 3-5% para criptomonedas volátiles. Posición estándar recomendada.";
+        } else if (confidence >= 50) {
+            return "Stop loss conservador: 2-3%. Reducir tamaño de posición al 50-70% de lo normal.";
+        } else {
+            return "Stop loss muy conservador: 1-2%. Posición mínima o evitar trading hasta señales claras.";
+        }
+    }
+    
+    private generateMarketContext(analysis: any): string {
+        const ma200Trend = analysis.movingAverages.ma200.trend;
+        const ma200Position = analysis.movingAverages.ma200.position;
+        
+        let context = "";
+        
+        if (ma200Position === 'ABOVE' && ma200Trend === 'UPTREND') {
+            context = "Mercado en tendencia alcista de largo plazo. Favorecer posiciones largas.";
+        } else if (ma200Position === 'BELOW' && ma200Trend === 'DOWNTREND') {
+            context = "Mercado en tendencia bajista de largo plazo. Ser cauteloso con posiciones largas.";
+        } else {
+            context = "Mercado en transición. Periodo de consolidación o cambio de tendencia.";
+        }
+        
+        return context;
     }
 
     async run() {

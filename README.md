@@ -1,21 +1,37 @@
-# Binance Crypto MCP Server
+# Binance Crypto MCP Server with Technical Analysis
 
-A Model Context Protocol (MCP) server that provides cryptocurrency information through Binance's public API, including comprehensive historical analysis and market cycle data.
+A Model Context Protocol (MCP) server that provides comprehensive cryptocurrency information through Binance's public API, including **advanced technical analysis** with professional trading indicators.
 
-## Features
+## 🚀 New Features - Technical Analysis
 
+- **📈 RSI Analysis**: Relative Strength Index with overbought/oversold signals
+- **📊 MACD Analysis**: Moving Average Convergence Divergence with crossover detection
+- **📉 Moving Averages**: EMA and SMA (20, 50, 200 periods) with trend analysis
+- **🎯 Overall Trading Signal**: AI-powered signal combining all indicators
+- **🔍 Professional Interpretations**: Human-readable explanations for each indicator
+- **⚡ Trading Recommendations**: Entry/exit strategies with risk management
+
+## Features Overview
+
+### Basic Data Tools
 - 🚀 Get current price of any cryptocurrency
 - 📊 Complete 24-hour statistics (price, volume, changes)
 - 🔍 Search cryptocurrency symbols
 - 📈 Top cryptocurrencies by trading volume
+
+### Historical Analysis
 - 📉 **Basic historical data** (up to 1000 periods)
 - 🕰️ **Extended historical data** (up to 12 years with complete analysis)
 - 🔄 **Multiple timeframes** (daily, weekly, monthly)
 - 🎯 **Market cycle analysis** and volatility metrics
-- 📊 **Performance analysis** and advanced statistics
-- ⚡ Non-authenticated API (no strict limits)
-- 🛡️ Data validation with Zod
-- 💾 TypeScript compatible
+
+### **🆕 Technical Analysis (NEW)**
+- 📈 **RSI (Relative Strength Index)** - Momentum oscillator
+- 📊 **MACD (Moving Average Convergence Divergence)** - Trend following
+- 📉 **Moving Averages (EMA/SMA)** - Trend identification
+- 🎯 **Overall Trading Signal** - Combined indicator analysis
+- 💡 **Professional Interpretations** - AI-powered explanations
+- ⚡ **Trading Recommendations** - Entry/exit strategies
 
 ## Installation
 
@@ -48,198 +64,131 @@ npm run build
 npm start
 ```
 
-### Option 3: Development mode
-
+5. Test technical indicators:
 ```bash
-npm run dev
+npx ts-node test-technical-indicators.ts
 ```
 
 ## Available Tools
 
-### 1. `get_crypto_price`
-Gets the current price of a cryptocurrency.
+### 🆕 **Technical Analysis Tool**
+
+#### **get_technical_analysis**
+Performs comprehensive technical analysis combining RSI, MACD, and moving averages.
 
 **Parameters:**
 - `symbol` (string): Cryptocurrency symbol (e.g., BTCUSDT, ETHUSDT)
-
-**Example response:**
-```json
-{
-  "symbol": "BTCUSDT",
-  "price": "$43,250.75",
-  "raw_price": "43250.75000000"
-}
-```
-
-### 2. `get_crypto_24hr_stats`
-Gets complete 24-hour statistics for a cryptocurrency.
-
-**Parameters:**
-- `symbol` (string): Cryptocurrency symbol
-
-**Example response:**
-```json
-{
-  "symbol": "BTCUSDT",
-  "current_price": "$43,250.75",
-  "price_change_24h": "+$1,250.50",
-  "price_change_percent_24h": "+2.98%",
-  "high_24h": "$44,100.00",
-  "low_24h": "$41,900.25",
-  "volume_24h": "25,430.85 BTC",
-  "quote_volume_24h": "$1,098,456,789",
-  "open_price": "$42,000.25",
-  "trade_count_24h": "890,234"
-}
-```
-
-### 3. `search_crypto_symbols`
-Searches for cryptocurrency symbols that match the query.
-
-**Parameters:**
-- `query` (string): Text to search for
-
-**Example response:**
-```json
-{
-  "query": "BTC",
-  "results_count": 15,
-  "symbols": [
-    {
-      "symbol": "BTCUSDT",
-      "base_asset": "BTC",
-      "quote_asset": "USDT",
-      "status": "TRADING",
-      "spot_trading": true,
-      "margin_trading": true
-    }
-  ]
-}
-```
-
-### 4. `get_top_cryptos_by_volume`
-Gets cryptocurrencies with the highest trading volume.
-
-**Parameters:**
-- `limit` (number, optional): Number of results (1-50, default: 10)
-
-**Example response:**
-```json
-{
-  "top_cryptos_by_24h_volume": [
-    {
-      "rank": 1,
-      "symbol": "BTCUSDT",
-      "price": "$43,250.75",
-      "price_change_24h": "+2.98%",
-      "volume_24h_usdt": "$1,098,456,789",
-      "high_24h": "$44,100.00",
-      "low_24h": "$41,900.25"
-    }
-  ]
-}
-```
-
-### 5. `get_historical_data`
-Gets basic historical data for a cryptocurrency (up to 1000 periods).
-
-**Parameters:**
-- `symbol` (string): Cryptocurrency symbol
 - `interval` (string, optional): Timeframe - '1d', '1w', '1M' (default: '1d')
-- `limit` (number, optional): Number of periods (max 1000, default: 365)
+- `periods` (number, optional): Data periods (200-500, default: 200)
 
 **Example response:**
 ```json
 {
-  "symbol": "BTCUSDT",
-  "interval": "1d",
-  "total_periods": 365,
-  "date_range": {
-    "start": "2023-07-21",
-    "end": "2024-07-21"
+  "analysis_summary": {
+    "symbol": "BTCUSDT",
+    "current_price": "$116,892.64",
+    "overall_signal": "BUY",
+    "confidence": "75%",
+    "analysis_date": "2024-07-22T15:30:00.000Z",
+    "data_period": "250 1d periods"
   },
-  "summary": {
-    "first_price": "$30,000.50",
-    "last_price": "$43,250.75",
-    "total_return": "+44.17%",
-    "all_time_high": "$73,800.00",
-    "all_time_low": "$15,500.25"
+  "rsi_analysis": {
+    "value": 45.67,
+    "signal": "NEUTRAL",
+    "strength": "WEAK",
+    "interpretation": "RSI en rango normal (45.67). Sin señales extremas, seguir tendencia principal."
   },
-  "data": [
-    {
-      "date": "2023-07-21",
-      "open": 30000.50,
-      "high": 30500.75,
-      "low": 29800.25,
-      "close": 30250.00,
-      "volume": 15420.85,
-      "quote_volume": 467832156.50,
-      "trades": 245678
-    }
-  ]
-}
-```
-
-### 6. `get_extended_historical_data`
-Gets extended historical data with complete market cycle analysis (up to 12 years).
-
-**Parameters:**
-- `symbol` (string): Cryptocurrency symbol
-- `interval` (string, optional): Timeframe - '1d', '1w', '1M' (default: '1d')  
-- `yearsBack` (number, optional): Years back (1-12, default: 4)
-
-**Example response:**
-```json
-{
-  "symbol": "BTCUSDT",
-  "interval": "1d",
-  "extended_analysis": {
-    "analysis_period": "1461 1d periods (2020-07-21 to 2024-07-21)",
-    "price_performance": {
-      "all_time_high": "$73,800.00",
-      "all_time_low": "$3,200.00",
-      "current_price": "$43,250.75",
-      "total_return": "+1,351.27%",
-      "roi_from_ath": "-41.39%"
+  "macd_analysis": {
+    "macd_line": 1250.45,
+    "signal_line": 980.32,
+    "histogram": 270.13,
+    "trend": "BULLISH",
+    "crossover": "BULLISH_CROSSOVER",
+    "interpretation": "Señal alcista: MACD acaba de cruzar por encima de la línea señal."
+  },
+  "moving_averages_analysis": {
+    "ma20": {
+      "sma": "$115,234.50",
+      "ema": "$115,890.75",
+      "trend": "UPTREND",
+      "position": "ABOVE"
     },
-    "volatility_analysis": {
-      "average_daily_change": "+0.245%",
-      "volatility_index": "4.567%",
-      "maximum_gain": "+87.45%",
-      "maximum_loss": "-54.32%"
+    "ma50": {
+      "sma": "$112,456.80",
+      "ema": "$113,220.45", 
+      "trend": "UPTREND",
+      "position": "ABOVE"
     },
-    "market_cycles": {
-      "cycle_highs_found": 12,
-      "cycle_lows_found": 15,
-      "average_cycle_high": "$65,432.18",
-      "average_cycle_low": "$18,567.45",
-      "current_position": "In normal range"
-    }
+    "ma200": {
+      "sma": "$98,567.20",
+      "ema": "$101,234.60",
+      "trend": "UPTREND",
+      "position": "ABOVE"
+    },
+    "interpretation": "Configuración alcista: EMA20 > EMA50 > EMA200. Tendencia alcista confirmada."
   },
-  "historical_data": {
-    "total_records": 1461,
-    "sample_recent_data": [
-      {
-        "timestamp": 1721520000000,
-        "date": "2024-07-21",
-        "open": 42800.50,
-        "high": 43890.75,
-        "low": 42650.25,
-        "close": 43250.75,
-        "volume": 18456.32,
-        "quoteVolume": 798567432.18,
-        "trades": 567890,
-        "change": 450.25,
-        "changePercent": 1.05
-      }
-    ]
+  "trading_recommendations": {
+    "action": "BUY",
+    "risk_level": "MEDIO - Confianza moderada",
+    "entry_strategy": "Entrada gradual recomendada. Considerar compra en pullbacks.",
+    "exit_strategy": "Seguir plan de trading establecido.",
+    "risk_management": "Stop loss conservador: 2-3%. Reducir tamaño de posición.",
+    "market_context": "Mercado en tendencia alcista de largo plazo."
   }
 }
 ```
 
-## Usage with Claude Desktop
+## 📊 Technical Indicators Explained
 
-To use this server with Claude Desktop, add the configuration to your MCP configuration file:
+### **RSI (Relative Strength Index)**
+- **Range**: 0-100
+- **Overbought**: RSI > 70 (consider selling)
+- **Oversold**: RSI < 30 (consider buying)
+- **Neutral**: RSI 30-70 (follow trend)
+- **Best for**: Identifying reversal points in volatile crypto markets
+
+### **MACD (Moving Average Convergence Divergence)**
+- **Components**: MACD Line, Signal Line, Histogram
+- **Bullish Signal**: MACD crosses above Signal Line
+- **Bearish Signal**: MACD crosses below Signal Line
+- **Trend**: MACD above 0 (bullish), below 0 (bearish)
+- **Best for**: Trend changes and momentum analysis
+
+### **Moving Averages (EMA vs SMA)**
+- **EMA (Exponential)**: More weight to recent prices - better for crypto
+- **SMA (Simple)**: Equal weight to all prices - more stable
+- **Periods**: 20 (short-term), 50 (medium-term), 200 (long-term)
+- **Best for**: Trend identification and support/resistance levels
+
+## Usage Examples
+
+### **🆕 Technical Analysis Examples:**
+
+#### Complete Technical Analysis
+```
+"Analyze Bitcoin's technical indicators using daily data"
+→ Use: get_technical_analysis with symbol: "BTCUSDT", interval: "1d"
+
+"What do the technical indicators say about Ethereum right now?"
+→ Use: get_technical_analysis with symbol: "ETHUSDT", periods: 300
+
+"Give me a technical analysis of Solana using weekly timeframe"
+→ Use: get_technical_analysis with symbol: "SOLUSDT", interval: "1w"
+```
+
+#### Professional Trading Scenarios
+```
+"Should I buy Bitcoin right now based on technical analysis?"
+→ Returns: Overall signal, RSI levels, MACD crossovers, moving average trends
+
+"What's the risk level for entering a position in Ethereum?"
+→ Returns: Risk assessment, entry strategies, stop loss recommendations
+
+"Is this a good time to take profits on my crypto holdings?"
+→ Returns: Exit strategies, overbought/oversold conditions, market context
+```
+
+## Configuration with Claude Desktop
 
 ### Windows:
 File: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -262,162 +211,67 @@ File: `~/.config/Claude/claude_desktop_config.json`
 }
 ```
 
-Or if installed locally:
-
-```json
-{
-  "mcpServers": {
-    "binance-crypto": {
-      "command": "node",
-      "args": ["path/to/dist/index.js"]
-    }
-  }
-}
-```
-
-## Usage Examples
-
-### **Real-time basic data:**
-```
-"What is the current price of Bitcoin?"
-→ Use: get_crypto_price with symbol: "BTCUSDT"
-
-"Show me Ethereum's 24h statistics"
-→ Use: get_crypto_24hr_stats with symbol: "ETHUSDT"
-```
-
-### **Search and ranking:**
-```
-"Find all coins related to 'SHIB'"
-→ Use: search_crypto_symbols with query: "SHIB"
-
-"What are the top 5 cryptos by volume?"
-→ Use: get_top_cryptos_by_volume with limit: 5
-```
-
-### **Basic historical analysis:**
-```
-"How did Bitcoin perform in the last 100 days?"
-→ Use: get_historical_data with symbol: "BTCUSDT", limit: 100
-
-"Show me Ethereum's weekly data for the past year"
-→ Use: get_historical_data with symbol: "ETHUSDT", interval: "1w", limit: 52
-```
-
-### **Cycle and trend analysis:**
-```
-"Analyze Bitcoin's complete cycles over the last 4 years"
-→ Use: get_extended_historical_data with symbol: "BTCUSDT", yearsBack: 4
-
-"What cycle phase is Ethereum in according to its 6-year history?"
-→ Use: get_extended_historical_data with symbol: "ETHUSDT", yearsBack: 6
-
-"Compare Bitcoin's volatility using 8 years of monthly data"
-→ Use: get_extended_historical_data with symbol: "BTCUSDT", interval: "1M", yearsBack: 8
-```
-
-## Popular Symbols
-
-### **Top Cryptocurrencies:**
-- **Bitcoin**: BTCUSDT
-- **Ethereum**: ETHUSDT
-- **BNB**: BNBUSDT
-- **Solana**: SOLUSDT
-- **XRP**: XRPUSDT
-
-### **Popular Altcoins:**
-- **Cardano**: ADAUSDT
-- **Dogecoin**: DOGEUSDT
-- **Polygon**: MATICUSDT
-- **Chainlink**: LINKUSDT
-- **Avalanche**: AVAXUSDT
-
-### **DeFi Tokens:**
-- **Uniswap**: UNIUSDT
-- **Aave**: AAVEUSDT
-- **Compound**: COMPUSDT
-- **SushiSwap**: SUSHIUSDT
-
-## Available Timeframes
-
-| Interval | Description | Best for |
-|----------|-------------|----------|
-| `1d` | Daily | Short-medium term trend analysis |
-| `1w` | Weekly | Cycle analysis and seasonal patterns |
-| `1M` | Monthly | Macro analysis and long-term cycles |
-
-## Limitations
-
-- Uses Binance's public API (no authentication required)
-- Subject to Binance rate limiting (typically 1200 requests/minute)
-- Data may have slight delay (usually <1 second)
-- Some very new symbols may not have complete history
-- Historical data limited by Binance availability
-- For 8+ year analysis, some tokens may not have sufficient data
-
 ## Development
 
-### Project structure
+### Project Structure (Updated)
 ```
 src/
-├── index.ts          # Main MCP server
-├─── helpers
-  ├─── binance-client.ts # Binance API client
-package.json          # Package configuration
-tsconfig.json        # TypeScript configuration
-README.md            # Documentation
+├── index.ts                      # Main MCP server
+├── helpers/
+│   ├── binance-client.ts         # Binance API client
+│   └── technical-indicators.ts   # 🆕 Technical analysis library
+test-technical-indicators.ts      # 🆕 Test suite
 ```
 
-### Available scripts
-- `npm run build`: Compile TypeScript to JavaScript
-- `npm run dev`: Run in development mode with ts-node
-- `npm start`: Run compiled version
-- `npm run prepare`: Compile before publishing
+### Testing
+```bash
+# Run technical indicators tests
+npx ts-node test-technical-indicators.ts
 
-## Advanced Use Cases
+# Build project
+npm run build
 
-### **Investment Analysis:**
-- Compare historical performance of multiple assets
-- Identify market cycles for entry/exit timing
-- Volatility analysis for risk management
+# Start server
+npm start
+```
 
-### **Market Research:**
-- Seasonal patterns across different timeframes
-- Correlations between different cryptocurrencies
-- Post-event analysis (halvings, updates, etc.)
+## 🎯 Use Cases for Technical Analysis
 
-### **Algorithmic Trading:**
-- Strategy backtesting with historical data
-- Identification of historical support and resistance levels
-- Volume and momentum analysis
+### **Day Trading**
+- **RSI**: Identify overbought/oversold levels for quick entries/exits
+- **MACD**: Spot momentum changes for scalping opportunities
+- **EMA 20**: Use as dynamic support/resistance for short-term trades
 
-## Contributing
+### **Swing Trading**
+- **MACD Crossovers**: Identify medium-term trend changes
+- **EMA 50**: Trend confirmation for swing positions
+- **RSI Divergences**: Spot potential reversal points
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-functionality`)
-3. Commit your changes (`git commit -am 'Add new functionality'`)
-4. Push to the branch (`git push origin feature/new-functionality`)
-5. Open a Pull Request
+### **Long-term Investing**
+- **EMA 200**: Determine overall market trend
+- **MACD Histogram**: Assess long-term momentum strength
+- **Multiple Timeframes**: Confirm signals across daily/weekly/monthly
+
+## Changelog
+
+### v2.0.0 - Technical Analysis Update
+- ✅ **NEW**: Complete technical analysis with RSI, MACD, Moving Averages
+- ✅ **NEW**: Professional trading recommendations  
+- ✅ **NEW**: Risk management suggestions
+- ✅ **NEW**: Multi-timeframe analysis support
+- ✅ **NEW**: Comprehensive test suite
+- ✅ **Enhanced**: Improved error handling and validation
+
+### v1.0.0 - Initial Release
+- ✅ Basic price and statistics tools
+- ✅ Symbol search functionality
+- ✅ Extended historical analysis
+- ✅ Market cycle analysis
 
 ## License
 
 MIT License - see LICENSE file for details.
 
-## Support
+---
 
-To report bugs or request features:
-- Open an issue on GitHub
-- Include usage examples and error logs if applicable
-- Specify Node.js version and server version
-
-## Changelog
-
-### v1.0.0
-- ✅ Basic price and statistics tools
-- ✅ Symbol search functionality
-- ✅ Top cryptos by volume
-- ✅ Basic historical data (up to 1000 periods)
-- ✅ Extended historical analysis (up to 12 years)
-- ✅ Market cycle and volatility analysis
-- ✅ Multiple timeframes (daily, weekly, monthly)
-- ✅ Debug mode and automated testing
+**⚡ Ready to start professional crypto analysis with technical indicators!**

@@ -58,6 +58,38 @@ export interface CMFResult {
     pressure: 'BUYING_PRESSURE' | 'SELLING_PRESSURE' | 'BALANCED';
 }
 
+export interface BollingerBandsResult {
+    middle: number;
+    upper: number;
+    lower: number;
+    width: number;
+    percent_b: number;
+    signal: 'OVERSOLD' | 'OVERBOUGHT' | 'NEUTRAL' | 'SQUEEZE';
+    position: 'ABOVE_UPPER' | 'BETWEEN_BANDS' | 'BELOW_LOWER' | 'AT_MIDDLE';
+    volatility: 'HIGH' | 'MEDIUM' | 'LOW';
+    squeeze_status: 'ENTERING_SQUEEZE' | 'IN_SQUEEZE' | 'EXITING_SQUEEZE' | 'NORMAL';
+}
+
+export interface StochasticResult {
+    k_percent: number;
+    d_percent: number;
+    signal: 'OVERSOLD' | 'OVERBOUGHT' | 'NEUTRAL';
+    crossover: 'BULLISH_CROSSOVER' | 'BEARISH_CROSSOVER' | 'NONE';
+    position: 'EXTREME_OVERSOLD' | 'OVERSOLD' | 'NEUTRAL' | 'OVERBOUGHT' | 'EXTREME_OVERBOUGHT';
+    divergence: 'BULLISH_DIVERGENCE' | 'BEARISH_DIVERGENCE' | 'NO_DIVERGENCE';
+    momentum: 'INCREASING' | 'DECREASING' | 'STABLE';
+}
+
+export interface WilliamsRResult {
+    williams_r: number;
+    signal: 'OVERSOLD' | 'OVERBOUGHT' | 'NEUTRAL';
+    position: 'EXTREME_OVERSOLD' | 'OVERSOLD' | 'NEUTRAL' | 'OVERBOUGHT' | 'EXTREME_OVERBOUGHT';
+    momentum: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+    reversal_signal: 'STRONG_REVERSAL' | 'WEAK_REVERSAL' | 'NO_REVERSAL';
+    trend_strength: 'STRONG' | 'MODERATE' | 'WEAK';
+    divergence: 'BULLISH_DIVERGENCE' | 'BEARISH_DIVERGENCE' | 'NO_DIVERGENCE';
+}
+
 export interface TechnicalAnalysisResult {
     symbol: string;
     timestamp: string;
@@ -73,7 +105,11 @@ export interface TechnicalAnalysisResult {
     obv: OBVResult;
     mfi: MFIResult;
     cmf: CMFResult;
+    bollingerBands: BollingerBandsResult;
+    stochastic: StochasticResult;
+    williamsR: WilliamsRResult;
     overallSignal: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL';
     confidence: number;
     volumeConfirmation: boolean;
+    volatilityLevel: 'HIGH' | 'MEDIUM' | 'LOW';
 }

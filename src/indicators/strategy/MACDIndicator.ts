@@ -8,40 +8,48 @@ export class MACDIndicator implements IndicatorStrategy<MACDResult> {
         private signalPeriod: number = 9
     ) { }
 
-    calculate(data: PriceData[]): MACDResult {
+    calculate(data: PriceData[]): MACDResult[] {
+        const results: MACDResult[] = [];
+        const closes = data.map(d => d.close);
+
         const ema = (period: number, prices: number[]) => {
             const k = 2 / (period + 1);
-            let ema = prices[0];
+            let emaValues = [prices[0]];
             for (let i = 1; i < prices.length; i++) {
-                ema = prices[i] * k + ema * (1 - k);
+                emaValues.push(prices[i] * k + emaValues[i - 1] * (1 - k));
             }
-            return ema;
+            return emaValues;
         };
 
-        const closes = data.map(d => d.close);
-        const shortEMA = ema(this.shortPeriod, closes.slice(-this.shortPeriod));
-        const longEMA = ema(this.longPeriod, closes.slice(-this.longPeriod));
-        const macd = shortEMA - longEMA;
+        const shortEMAs = ema(this.shortPeriod, closes);
+        const longEMAs = ema(this.longPeriod, closes);
 
-        const histogramData = Array.from({ length: this.signalPeriod }, (_, i) =>
-            ema(this.shortPeriod, closes.slice(-(this.signalPeriod + i)))
-            - ema(this.longPeriod, closes.slice(-(this.signalPeriod + i)))
-        );
+        for (let i = this.longPeriod; i < data.length; i++) {
+            const macd = shortEMAs[i] - longEMAs[i];
 
-        const signal = ema(this.signalPeriod, histogramData);
-        const histogram = macd - signal;
+            const macdLine = shortEMAs.slice(i - this.signalPeriod, i + 1).map((val, index) => val - longEMAs[i - this.signalPeriod + index]);
+            const signal = ema(this.signalPeriod, macdLine)[macdLine.length - 1];
 
-        let trend: MACDResult["trend"] = "NEUTRAL";
-        let crossover: MACDResult["crossover"] = "NONE";
+            const histogram = macd - signal;
 
-        if (macd > signal) {
-            trend = "BULLISH";
-            crossover = histogram > 0 ? "BULLISH_CROSSOVER" : "NONE";
-        } else if (macd < signal) {
-            trend = "BEARISH";
-            crossover = histogram < 0 ? "BEARISH_CROSSOVER" : "NONE";
+            let trend: MACDResult["trend"] = "NEUTRAL";
+            let crossover: MACDResult["crossover"] = "NONE";
+
+            if (macd > signal) {
+                trend = "BULLISH";
+                if (histogram > 0 && (shortEMAs[i - 1] - longEMAs[i - 1]) <= ema(this.signalPeriod, shortEMAs.slice(i - this.signalPeriod - 1, i).map((val, index) => val - longEMAs[i - this.signalPeriod - 1 + index]))[macdLine.length - 2]) {
+                    crossover = "BULLISH_CROSSOVER";
+                }
+            } else if (macd < signal) {
+                trend = "BEARISH";
+                if (histogram < 0 && (shortEMAs[i - 1] - longEMAs[i - 1]) >= ema(this.signalPeriod, shortEMAs.slice(i - this.signalPeriod - 1, i).map((val, index) => val - longEMAs[i - this.signalPeriod - 1 + index]))[macdLine.length - 2]) {
+                    crossover = "BEARISH_CROSSOVER";
+                }
+            }
+
+            results.push({ macd, signal, histogram, trend, crossover });
         }
 
-        return { macd, signal, histogram, trend, crossover };
+        return results;
     }
 }

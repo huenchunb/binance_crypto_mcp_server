@@ -8,6 +8,7 @@ import {
 import { BinanceClient } from './helpers/binance-client';
 import { PriceData } from './indicators/types/IndicatorTypes';
 import { TechnicalAnalysisEngine } from './indicators/engine/TechnicalAnalysisEngine';
+import { IndicatorFactory } from './indicators/factory/IndicatorFactory';
 
 class BinanceMCPServer {
     private server: Server;
@@ -151,9 +152,40 @@ class BinanceMCPServer {
                                 interval: {
                                     type: 'string',
                                     description: 'Intervalo (ej: 1h, 4h, 1d)',
-                                }
+                                },
+                                output_mode: {
+                                    type: 'string',
+                                    enum: ['summary', 'full_data'],
+                                    description: 'Modo de salida: resumen o datos completos',
+                                    default: 'summary',
+                                },
                             },
                             required: ['symbol', 'interval']
+                        },
+                    },
+                    {
+                        name: 'get_indicator_values',
+                        description: 'Obtiene los valores históricos de uno o más indicadores técnicos',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                symbol: {
+                                    type: 'string',
+                                    description: 'Símbolo del par (ej: BTCUSDT)',
+                                },
+                                interval: {
+                                    type: 'string',
+                                    description: 'Intervalo (ej: 1h, 4h, 1d)',
+                                },
+                                indicators: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'string',
+                                    },
+                                    description: 'Array de indicadores a calcular (ej: ["RSI", "MACD"])',
+                                },
+                            },
+                            required: ['symbol', 'interval', 'indicators']
                         },
                     }
                 ] satisfies Tool[],
@@ -175,7 +207,7 @@ class BinanceMCPServer {
                                     type: 'text',
                                     text: JSON.stringify({
                                         symbol: priceData.symbol,
-                                        price: `$${parseFloat(priceData.price).toLocaleString('en-US', {
+                                        price: `${parseFloat(priceData.price).toLocaleString('en-US', {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 8
                                         })}`,
@@ -202,23 +234,23 @@ class BinanceMCPServer {
                                     type: 'text',
                                     text: JSON.stringify({
                                         symbol: ticker.symbol,
-                                        current_price: `$${currentPrice.toLocaleString('en-US', {
+                                        current_price: `${currentPrice.toLocaleString('en-US', {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 8
                                         })}`,
-                                        price_change_24h: `${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(4)}`,
+                                        price_change_24h: `${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(4)}`,
                                         price_change_percent_24h: `${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(2)}%`,
-                                        high_24h: `$${parseFloat(ticker.highPrice).toLocaleString('en-US', {
+                                        high_24h: `${parseFloat(ticker.highPrice).toLocaleString('en-US', {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 8
                                         })}`,
-                                        low_24h: `$${parseFloat(ticker.lowPrice).toLocaleString('en-US', {
+                                        low_24h: `${parseFloat(ticker.lowPrice).toLocaleString('en-US', {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 8
                                         })}`,
                                         volume_24h: `${volume24h.toLocaleString('en-US')} ${ticker.symbol.replace('USDT', '').replace('BUSD', '')}`,
-                                        quote_volume_24h: `$${quoteVolume24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-                                        open_price: `$${parseFloat(ticker.openPrice).toLocaleString('en-US', {
+                                        quote_volume_24h: `${quoteVolume24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+                                        open_price: `${parseFloat(ticker.openPrice).toLocaleString('en-US', {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 8
                                         })}`,
@@ -266,17 +298,17 @@ class BinanceMCPServer {
                                         top_cryptos_by_24h_volume: topCryptos.map((crypto, index) => ({
                                             rank: index + 1,
                                             symbol: crypto.symbol,
-                                            price: `$${parseFloat(crypto.lastPrice).toLocaleString('en-US', {
+                                            price: `${parseFloat(crypto.lastPrice).toLocaleString('en-US', {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 8
                                             })}`,
                                             price_change_24h: `${parseFloat(crypto.priceChangePercent) >= 0 ? '+' : ''}${parseFloat(crypto.priceChangePercent).toFixed(2)}%`,
-                                            volume_24h_usdt: `$${parseFloat(crypto.quoteVolume).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-                                            high_24h: `$${parseFloat(crypto.highPrice).toLocaleString('en-US', {
+                                            volume_24h_usdt: `${parseFloat(crypto.quoteVolume).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+                                            high_24h: `${parseFloat(crypto.highPrice).toLocaleString('en-US', {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 8
                                             })}`,
-                                            low_24h: `$${parseFloat(crypto.lowPrice).toLocaleString('en-US', {
+                                            low_24h: `${parseFloat(crypto.lowPrice).toLocaleString('en-US', {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 8
                                             })}`,
@@ -394,10 +426,11 @@ class BinanceMCPServer {
                     }
 
                     case 'get_technical_analysis': {
-                        const { symbol, interval = '1d', periods = 200 } = args as {
+                        const { symbol, interval = '1d', periods = 200, output_mode = 'summary' } = args as {
                             symbol: string;
                             interval?: '1h' | '4h' | '1d' | '1w' | '1M';
                             periods?: number;
+                            output_mode?: 'summary' | 'full_data';
                         };
 
                         // Validar y ajustar parámetros
@@ -419,14 +452,56 @@ class BinanceMCPServer {
                         }));
 
                         // Crear instancia del motor de análisis técnico
-                        // const candles: PriceData[] = await this.binanceClient.getHistoricalData(input.symbol, input.interval);
-                        const technicalAnalysis = TechnicalAnalysisEngine.performCompleteAnalysis(candles, symbol);
+                        const technicalAnalysis = TechnicalAnalysisEngine.performCompleteAnalysis(candles, symbol, output_mode);
 
                         return {
                             content: [
                                 {
                                     type: 'text',
                                     text: JSON.stringify(technicalAnalysis, null, 2),
+                                },
+                            ],
+                        };
+                    }
+
+                    case 'get_indicator_values': {
+                        const { symbol, interval = '1d', indicators, periods = 200 } = args as {
+                            symbol: string;
+                            interval?: '1h' | '4h' | '1d' | '1w' | '1M';
+                            indicators: string[];
+                            periods?: number;
+                        };
+
+                        // Validar y ajustar parámetros
+                        const validPeriods = Math.min(Math.max(periods, 200), 500);
+
+                        // Obtener datos históricos para análisis técnico
+                        const historicalData = await this.binanceClient.getHistoricalData(
+                            symbol,
+                            interval,
+                            validPeriods
+                        );
+
+                        // Convertir datos al formato requerido por TechnicalIndicators
+                        const candles: PriceData[] = historicalData.map(kline => ({
+                            close: parseFloat(kline[4]),  // precio de cierre
+                            high: parseFloat(kline[2]),   // precio máximo
+                            low: parseFloat(kline[3]),    // precio mínimo
+                            volume: parseFloat(kline[5])  // volumen
+                        }));
+
+                        const indicatorInstances = IndicatorFactory.createMany(indicators);
+                        const results: { [key: string]: any[] } = {};
+
+                        indicatorInstances.forEach((instance, index) => {
+                            results[indicators[index]] = instance.calculate(candles);
+                        });
+
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: JSON.stringify(results, null, 2),
                                 },
                             ],
                         };
@@ -440,8 +515,7 @@ class BinanceMCPServer {
                     content: [
                         {
                             type: 'text',
-                            text: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,
-                        },
+                            text: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,}
                     ],
                     isError: true,
                 };

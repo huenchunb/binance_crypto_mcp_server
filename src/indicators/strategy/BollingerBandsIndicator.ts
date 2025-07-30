@@ -7,44 +7,42 @@ export class BollingerBandsIndicator implements IndicatorStrategy<BollingerBands
         private standardDeviations: number = 2
     ) { }
 
-    calculate(data: PriceData[]): BollingerBandsResult {
-        if (data.length < this.period) {
-            throw new Error(`Bollinger Bands requiere al menos ${this.period} períodos de datos`);
+    calculate(data: PriceData[]): BollingerBandsResult[] {
+        const results: BollingerBandsResult[] = [];
+
+        for (let i = this.period; i < data.length; i++) {
+            const slice = data.slice(i - this.period, i + 1);
+            const closes = slice.map(d => d.close);
+            const currentPrice = closes[closes.length - 1];
+
+            const middle = this.calculateSMA(closes);
+            const standardDeviation = this.calculateStandardDeviation(closes, middle);
+
+            const upper = middle + (standardDeviation * this.standardDeviations);
+            const lower = middle - (standardDeviation * this.standardDeviations);
+
+            const width = ((upper - lower) / middle) * 100;
+            const percent_b = (currentPrice - lower) / (upper - lower);
+
+            const signal = this.determineSignal(currentPrice, upper, lower, width, percent_b);
+            const position = this.determinePosition(currentPrice, upper, lower, middle);
+            const volatility = this.determineVolatility(width);
+            const squeeze_status = this.detectSqueeze(data.slice(0, i + 1), width);
+
+            results.push({
+                middle: Number(middle.toFixed(6)),
+                upper: Number(upper.toFixed(6)),
+                lower: Number(lower.toFixed(6)),
+                width: Number(width.toFixed(4)),
+                percent_b: Number(percent_b.toFixed(4)),
+                signal,
+                position,
+                volatility,
+                squeeze_status
+            });
         }
 
-        const closes = data.slice(-this.period).map(d => d.close);
-        const currentPrice = data[data.length - 1].close;
-
-        const middle = this.calculateSMA(closes);
-
-        const standardDeviation = this.calculateStandardDeviation(closes, middle);
-
-        const upper = middle + (standardDeviation * this.standardDeviations);
-        const lower = middle - (standardDeviation * this.standardDeviations);
-
-        const width = ((upper - lower) / middle) * 100;
-
-        const percent_b = (currentPrice - lower) / (upper - lower);
-
-        const signal = this.determineSignal(currentPrice, upper, lower, width, percent_b);
-
-        const position = this.determinePosition(currentPrice, upper, lower, middle);
-
-        const volatility = this.determineVolatility(width);
-
-        const squeeze_status = this.detectSqueeze(data, width);
-
-        return {
-            middle: Number(middle.toFixed(6)),
-            upper: Number(upper.toFixed(6)),
-            lower: Number(lower.toFixed(6)),
-            width: Number(width.toFixed(4)),
-            percent_b: Number(percent_b.toFixed(4)),
-            signal,
-            position,
-            volatility,
-            squeeze_status
-        };
+        return results;
     }
 
     private calculateSMA(prices: number[]): number {

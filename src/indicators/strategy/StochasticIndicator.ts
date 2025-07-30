@@ -8,44 +8,45 @@ export class StochasticIndicator implements IndicatorStrategy<StochasticResult> 
         private slowing: number = 3
     ) { }
 
-    calculate(data: PriceData[]): StochasticResult {
-        if (data.length < this.kPeriod + this.slowing + this.dPeriod) {
-            throw new Error(`Stochastic requiere al menos ${this.kPeriod + this.slowing + this.dPeriod} períodos de datos`);
+    calculate(data: PriceData[]): StochasticResult[] {
+        const results: StochasticResult[] = [];
+
+        for (let i = this.kPeriod + this.slowing + this.dPeriod; i < data.length; i++) {
+            const slice = data.slice(i - (this.kPeriod + this.slowing + this.dPeriod), i + 1);
+            const kValues: number[] = [];
+
+            for (let j = this.kPeriod - 1; j < slice.length; j++) {
+                const periodData = slice.slice(j - this.kPeriod + 1, j + 1);
+                const k = this.calculateRawK(periodData);
+                kValues.push(k);
+            }
+
+            const smoothedKValues = this.applySmoothingToK(kValues);
+            const dValues = this.calculateD(smoothedKValues);
+
+            const currentK = smoothedKValues[smoothedKValues.length - 1];
+            const currentD = dValues[dValues.length - 1];
+            const previousK = smoothedKValues[smoothedKValues.length - 2] || currentK;
+            const previousD = dValues[dValues.length - 2] || currentD;
+
+            const signal = this.determineSignal(currentK, currentD);
+            const crossover = this.detectCrossover(currentK, currentD, previousK, previousD);
+            const position = this.determinePosition(currentK);
+            const divergence = this.detectDivergence(slice, smoothedKValues);
+            const momentum = this.analyzeMomentum(smoothedKValues);
+
+            results.push({
+                k_percent: Number(currentK.toFixed(2)),
+                d_percent: Number(currentD.toFixed(2)),
+                signal,
+                crossover,
+                position,
+                divergence,
+                momentum
+            });
         }
 
-        const kValues: number[] = [];
-        const startIndex = Math.max(0, data.length - (this.kPeriod + this.slowing + this.dPeriod));
-
-        for (let i = startIndex + this.kPeriod - 1; i < data.length; i++) {
-            const periodData = data.slice(i - this.kPeriod + 1, i + 1);
-            const k = this.calculateRawK(periodData);
-            kValues.push(k);
-        }
-
-        const smoothedKValues = this.applySmoothingToK(kValues);
-
-        const dValues = this.calculateD(smoothedKValues);
-
-        const currentK = smoothedKValues[smoothedKValues.length - 1];
-        const currentD = dValues[dValues.length - 1];
-        const previousK = smoothedKValues[smoothedKValues.length - 2] || currentK;
-        const previousD = dValues[dValues.length - 2] || currentD;
-
-        const signal = this.determineSignal(currentK, currentD);
-        const crossover = this.detectCrossover(currentK, currentD, previousK, previousD);
-        const position = this.determinePosition(currentK);
-        const divergence = this.detectDivergence(data, smoothedKValues);
-        const momentum = this.analyzeMomentum(smoothedKValues);
-
-        return {
-            k_percent: Number(currentK.toFixed(2)),
-            d_percent: Number(currentD.toFixed(2)),
-            signal,
-            crossover,
-            position,
-            divergence,
-            momentum
-        };
+        return results;
     }
 
     private calculateRawK(periodData: PriceData[]): number {

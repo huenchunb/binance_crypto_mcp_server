@@ -4,40 +4,42 @@ import { PriceData, WilliamsRResult } from '../types/IndicatorTypes';
 export class WilliamsRIndicator implements IndicatorStrategy<WilliamsRResult> {
     constructor(private period: number = 14) { }
 
-    calculate(data: PriceData[]): WilliamsRResult {
-        if (data.length < this.period) {
-            throw new Error(`Williams %R requiere al menos ${this.period} períodos de datos`);
+    calculate(data: PriceData[]): WilliamsRResult[] {
+        const results: WilliamsRResult[] = [];
+
+        for (let i = this.period; i < data.length; i++) {
+            const slice = data.slice(i - this.period, i + 1);
+            const currentClose = slice[slice.length - 1].close;
+
+            const highestHigh = Math.max(...slice.map(d => d.high));
+            const lowestLow = Math.min(...slice.map(d => d.low));
+
+            let williamsR: number;
+            if (highestHigh === lowestLow) {
+                williamsR = -50;
+            } else {
+                williamsR = ((highestHigh - currentClose) / (highestHigh - lowestLow)) * -100;
+            }
+
+            const signal = this.determineSignal(williamsR);
+            const position = this.determinePosition(williamsR);
+            const momentum = this.analyzeMomentum(data.slice(0, i + 1));
+            const reversalSignal = this.detectReversalSignal(williamsR, data.slice(0, i + 1));
+            const trendStrength = this.analyzeTrendStrength(data.slice(0, i + 1));
+            const divergence = this.detectDivergence(data.slice(0, i + 1));
+
+            results.push({
+                williams_r: Number(williamsR.toFixed(2)),
+                signal,
+                position,
+                momentum,
+                reversal_signal: reversalSignal,
+                trend_strength: trendStrength,
+                divergence
+            });
         }
 
-        const periodData = data.slice(-this.period);
-        const currentClose = data[data.length - 1].close;
-
-        const highestHigh = Math.max(...periodData.map(d => d.high));
-        const lowestLow = Math.min(...periodData.map(d => d.low));
-
-        let williamsR: number;
-        if (highestHigh === lowestLow) {
-            williamsR = -50;
-        } else {
-            williamsR = ((highestHigh - currentClose) / (highestHigh - lowestLow)) * -100;
-        }
-
-        const signal = this.determineSignal(williamsR);
-        const position = this.determinePosition(williamsR);
-        const momentum = this.analyzeMomentum(data);
-        const reversalSignal = this.detectReversalSignal(williamsR, data);
-        const trendStrength = this.analyzeTrendStrength(data);
-        const divergence = this.detectDivergence(data);
-
-        return {
-            williams_r: Number(williamsR.toFixed(2)),
-            signal,
-            position,
-            momentum,
-            reversal_signal: reversalSignal,
-            trend_strength: trendStrength,
-            divergence
-        };
+        return results;
     }
 
     private determineSignal(williamsR: number): WilliamsRResult['signal'] {

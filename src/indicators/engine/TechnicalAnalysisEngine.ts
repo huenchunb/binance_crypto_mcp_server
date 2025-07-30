@@ -9,29 +9,45 @@ import {
   CMFResult,
   BollingerBandsResult,
   StochasticResult,
-  WilliamsRResult
+  WilliamsRResult,
+  RSIResult,
+  MACDResult,
+  MovingAverageResult
 } from '../types/IndicatorTypes';
 
 export class TechnicalAnalysisEngine {
-  static performCompleteAnalysis(priceData: PriceData[], symbol: string): TechnicalAnalysisResult {
+  static performCompleteAnalysis(priceData: PriceData[], symbol: string, outputMode: 'summary' | 'full_data' = 'summary'): TechnicalAnalysisResult {
     if (priceData.length < 200) {
       throw new Error('Necesitas al menos 200 períodos para análisis técnico completo');
     }
 
     const currentPrice = priceData[priceData.length - 1].close;
 
-    const rsi = IndicatorFactory.create('RSI').calculate(priceData);
-    const macd = IndicatorFactory.create('MACD').calculate(priceData);
-    const ma20 = IndicatorFactory.create('MA20').calculate(priceData);
-    const ma50 = IndicatorFactory.create('MA50').calculate(priceData);
-    const ma200 = IndicatorFactory.create('MA200').calculate(priceData);
-    const vwap = IndicatorFactory.create('VWAP').calculate(priceData);
-    const obv = IndicatorFactory.create('OBV').calculate(priceData);
-    const mfi = IndicatorFactory.create('MFI').calculate(priceData);
-    const cmf = IndicatorFactory.create('CMF').calculate(priceData);
-    const bollingerBands = IndicatorFactory.create('BOLLINGER_BANDS').calculate(priceData);
-    const stochastic = IndicatorFactory.create('STOCHASTIC').calculate(priceData);
-    const williamsR = IndicatorFactory.create('WILLIAMS_R').calculate(priceData);
+    const rsiData = IndicatorFactory.create('RSI').calculate(priceData);
+    const macdData = IndicatorFactory.create('MACD').calculate(priceData);
+    const ma20Data = IndicatorFactory.create('MA20').calculate(priceData);
+    const ma50Data = IndicatorFactory.create('MA50').calculate(priceData);
+    const ma200Data = IndicatorFactory.create('MA200').calculate(priceData);
+    const vwapData = IndicatorFactory.create('VWAP').calculate(priceData);
+    const obvData = IndicatorFactory.create('OBV').calculate(priceData);
+    const mfiData = IndicatorFactory.create('MFI').calculate(priceData);
+    const cmfData = IndicatorFactory.create('CMF').calculate(priceData);
+    const bollingerBandsData = IndicatorFactory.create('BOLLINGER_BANDS').calculate(priceData);
+    const stochasticData = IndicatorFactory.create('STOCHASTIC').calculate(priceData);
+    const williamsRData = IndicatorFactory.create('WILLIAMS_R').calculate(priceData);
+
+    const rsi = rsiData[rsiData.length - 1];
+    const macd = macdData[macdData.length - 1];
+    const ma20 = ma20Data[ma20Data.length - 1];
+    const ma50 = ma50Data[ma50Data.length - 1];
+    const ma200 = ma200Data[ma200Data.length - 1];
+    const vwap = vwapData[vwapData.length - 1];
+    const obv = obvData[obvData.length - 1];
+    const mfi = mfiData[mfiData.length - 1];
+    const cmf = cmfData[cmfData.length - 1];
+    const bollingerBands = bollingerBandsData[bollingerBandsData.length - 1];
+    const stochastic = stochasticData[stochasticData.length - 1];
+    const williamsR = williamsRData[williamsRData.length - 1];
 
     let score = 0;
     let maxScore = 0;
@@ -165,25 +181,42 @@ export class TechnicalAnalysisEngine {
       overallSignal = 'NEUTRAL';
     }
 
-    return {
+    const result: TechnicalAnalysisResult = {
       symbol,
       timestamp: new Date().toISOString(),
       currentPrice,
-      rsi,
-      macd,
-      vwap,
-      obv,
-      mfi,
-      cmf,
+      rsi: rsi,
+      macd: macd,
+      vwap: vwap,
+      obv: obv,
+      mfi: mfi,
+      cmf: cmf,
       movingAverages: { ma20, ma50, ma200 },
-      bollingerBands,
-      stochastic,
-      williamsR,
+      bollingerBands: bollingerBands,
+      stochastic: stochastic,
+      williamsR: williamsR,
       overallSignal,
       confidence: Math.round(confidence),
       volumeConfirmation,
       volatilityLevel
     };
+
+    if (outputMode === 'full_data') {
+      result.rsiData = rsiData;
+      result.macdData = macdData;
+      result.ma20Data = ma20Data;
+      result.ma50Data = ma50Data;
+      result.ma200Data = ma200Data;
+      result.vwapData = vwapData;
+      result.obvData = obvData;
+      result.mfiData = mfiData;
+      result.cmfData = cmfData;
+      result.bollingerBandsData = bollingerBandsData;
+      result.stochasticData = stochasticData;
+      result.williamsRData = williamsRData;
+    }
+
+    return result;
   }
 
   private static checkVolumeConfirmation(
@@ -214,7 +247,7 @@ export class TechnicalAnalysisEngine {
    * Detecta señales contradictorias entre los indicadores de momentum
    */
   private static detectContradictorySignals(
-    rsi: any,
+    rsi: RSIResult,
     stochastic: StochasticResult,
     williamsR: WilliamsRResult,
     bollingerBands: BollingerBandsResult
@@ -258,7 +291,7 @@ export class TechnicalAnalysisEngine {
    * Cuenta cuántos indicadores confirman la dirección principal
    */
   private static countConfirmingSignals(
-    rsi: any,
+    rsi: RSIResult,
     stochastic: StochasticResult,
     williamsR: WilliamsRResult,
     bollingerBands: BollingerBandsResult,

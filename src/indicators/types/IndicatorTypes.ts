@@ -112,4 +112,16 @@ export interface TechnicalAnalysisResult {
     confidence: number;
     volumeConfirmation: boolean;
     volatilityLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+    rsiData?: RSIResult[];
+    macdData?: MACDResult[];
+    ma20Data?: MovingAverageResult[];
+    ma50Data?: MovingAverageResult[];
+    ma200Data?: MovingAverageResult[];
+    vwapData?: VWAPResult[];
+    obvData?: OBVResult[];
+    mfiData?: MFIResult[];
+    cmfData?: CMFResult[];
+    bollingerBandsData?: BollingerBandsResult[];
+    stochasticData?: StochasticResult[];
+    williamsRData?: WilliamsRResult[];
 }

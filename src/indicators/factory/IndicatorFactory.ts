@@ -65,6 +65,10 @@ export class IndicatorFactory {
         }
     }
 
+    static createMany(types: string[]): IndicatorStrategy<any>[] {
+        return types.map(type => this.create(type as any));
+    }
+
     /**
      * Método para crear indicadores con parámetros personalizados
      */

@@ -1,45 +1,39 @@
 import { IndicatorStrategy } from './IndicatorStrategy';
 import { PriceData, WilliamsRResult } from '../types/IndicatorTypes';
+import { WilliamsR } from 'technicalindicators';
+import { WilliamsRInput } from 'technicalindicators/declarations/momentum/WilliamsR';
 
 export class WilliamsRIndicator implements IndicatorStrategy<WilliamsRResult> {
     constructor(private period: number = 14) { }
 
     calculate(data: PriceData[]): WilliamsRResult[] {
-        const results: WilliamsRResult[] = [];
+        const wrInput: WilliamsRInput = {
+            high: data.map(d => d.high),
+            low: data.map(d => d.low),
+            close: data.map(d => d.close),
+            period: this.period
+        };
 
-        for (let i = this.period; i < data.length; i++) {
-            const slice = data.slice(i - this.period, i + 1);
-            const currentClose = slice[slice.length - 1].close;
+        const wrValues = WilliamsR.calculate(wrInput);
 
-            const highestHigh = Math.max(...slice.map(d => d.high));
-            const lowestLow = Math.min(...slice.map(d => d.low));
+        return wrValues.map(wr => {
+            const signal = this.determineSignal(wr);
+            const position = this.determinePosition(wr);
+            const momentum = this.analyzeMomentum(data);
+            const reversalSignal = this.detectReversalSignal(wr, data);
+            const trendStrength = this.analyzeTrendStrength(data);
+            const divergence = this.detectDivergence(data);
 
-            let williamsR: number;
-            if (highestHigh === lowestLow) {
-                williamsR = -50;
-            } else {
-                williamsR = ((highestHigh - currentClose) / (highestHigh - lowestLow)) * -100;
-            }
-
-            const signal = this.determineSignal(williamsR);
-            const position = this.determinePosition(williamsR);
-            const momentum = this.analyzeMomentum(data.slice(0, i + 1));
-            const reversalSignal = this.detectReversalSignal(williamsR, data.slice(0, i + 1));
-            const trendStrength = this.analyzeTrendStrength(data.slice(0, i + 1));
-            const divergence = this.detectDivergence(data.slice(0, i + 1));
-
-            results.push({
-                williams_r: Number(williamsR.toFixed(2)),
+            return {
+                williams_r: wr,
                 signal,
                 position,
                 momentum,
                 reversal_signal: reversalSignal,
                 trend_strength: trendStrength,
                 divergence
-            });
-        }
-
-        return results;
+            };
+        });
     }
 
     private determineSignal(williamsR: number): WilliamsRResult['signal'] {

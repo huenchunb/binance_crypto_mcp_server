@@ -1,92 +1,42 @@
 import { IndicatorStrategy } from './IndicatorStrategy';
 import { PriceData, StochasticResult } from '../types/IndicatorTypes';
+import { Stochastic } from 'technicalindicators';
+import { StochasticInput } from 'technicalindicators/declarations/momentum/Stochastic';
 
 export class StochasticIndicator implements IndicatorStrategy<StochasticResult> {
     constructor(
         private kPeriod: number = 14,
         private dPeriod: number = 3,
-        private slowing: number = 3
     ) { }
 
     calculate(data: PriceData[]): StochasticResult[] {
-        const results: StochasticResult[] = [];
+        const stochasticInput: StochasticInput = {
+            high: data.map(d => d.high),
+            low: data.map(d => d.low),
+            close: data.map(d => d.close),
+            period: this.kPeriod,
+            signalPeriod: this.dPeriod
+        };
 
-        for (let i = this.kPeriod + this.slowing + this.dPeriod; i < data.length; i++) {
-            const slice = data.slice(i - (this.kPeriod + this.slowing + this.dPeriod), i + 1);
-            const kValues: number[] = [];
+        const stochasticValues = Stochastic.calculate(stochasticInput);
 
-            for (let j = this.kPeriod - 1; j < slice.length; j++) {
-                const periodData = slice.slice(j - this.kPeriod + 1, j + 1);
-                const k = this.calculateRawK(periodData);
-                kValues.push(k);
-            }
+        return stochasticValues.map(stochastic => {
+            const signal = this.determineSignal(stochastic.k, stochastic.d);
+            const crossover = this.detectCrossover(stochastic.k, stochastic.d, stochastic.k, stochastic.d);
+            const position = this.determinePosition(stochastic.k);
+            const divergence = this.detectDivergence(data, [stochastic.k]);
+            const momentum = this.analyzeMomentum([stochastic.k]);
 
-            const smoothedKValues = this.applySmoothingToK(kValues);
-            const dValues = this.calculateD(smoothedKValues);
-
-            const currentK = smoothedKValues[smoothedKValues.length - 1];
-            const currentD = dValues[dValues.length - 1];
-            const previousK = smoothedKValues[smoothedKValues.length - 2] || currentK;
-            const previousD = dValues[dValues.length - 2] || currentD;
-
-            const signal = this.determineSignal(currentK, currentD);
-            const crossover = this.detectCrossover(currentK, currentD, previousK, previousD);
-            const position = this.determinePosition(currentK);
-            const divergence = this.detectDivergence(slice, smoothedKValues);
-            const momentum = this.analyzeMomentum(smoothedKValues);
-
-            results.push({
-                k_percent: Number(currentK.toFixed(2)),
-                d_percent: Number(currentD.toFixed(2)),
+            return {
+                k_percent: stochastic.k,
+                d_percent: stochastic.d,
                 signal,
                 crossover,
                 position,
                 divergence,
                 momentum
-            });
-        }
-
-        return results;
-    }
-
-    private calculateRawK(periodData: PriceData[]): number {
-        const currentClose = periodData[periodData.length - 1].close;
-        const highestHigh = Math.max(...periodData.map(d => d.high));
-        const lowestLow = Math.min(...periodData.map(d => d.low));
-
-        if (highestHigh === lowestLow) {
-            return 50;
-        }
-
-        return ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100;
-    }
-
-    private applySmoothingToK(rawKValues: number[]): number[] {
-        if (this.slowing <= 1) {
-            return rawKValues;
-        }
-
-        const smoothedK: number[] = [];
-
-        for (let i = this.slowing - 1; i < rawKValues.length; i++) {
-            const slice = rawKValues.slice(i - this.slowing + 1, i + 1);
-            const smoothed = slice.reduce((sum, val) => sum + val, 0) / slice.length;
-            smoothedK.push(smoothed);
-        }
-
-        return smoothedK;
-    }
-
-    private calculateD(kValues: number[]): number[] {
-        const dValues: number[] = [];
-
-        for (let i = this.dPeriod - 1; i < kValues.length; i++) {
-            const slice = kValues.slice(i - this.dPeriod + 1, i + 1);
-            const d = slice.reduce((sum, val) => sum + val, 0) / slice.length;
-            dValues.push(d);
-        }
-
-        return dValues;
+            };
+        });
     }
 
     private determineSignal(kPercent: number, dPercent: number): StochasticResult['signal'] {

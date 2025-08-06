@@ -26,7 +26,7 @@ export class CMFIndicator implements IndicatorStrategy<CMFResult> {
 
             const strength = Math.abs(cmf) > 0.2 ? "STRONG" : Math.abs(cmf) > 0.1 ? "MODERATE" : "WEAK";
 
-            const pressure = cmf > 0.05 ? "BUYING_PRESSURE" :
+            const pressure = cmf > 0.05 ? "BUYING_PRESSURE" : 
                 cmf < -0.05 ? "SELLING_PRESSURE" : "BALANCED";
 
             results.push({

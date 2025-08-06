@@ -1,28 +1,24 @@
 import { IndicatorStrategy } from './IndicatorStrategy';
 import { PriceData, OBVResult } from '../types/IndicatorTypes';
+import { OBV } from 'technicalindicators';
+import { OBVInput } from 'technicalindicators/declarations/volume/OBV';
 
 export class OBVIndicator implements IndicatorStrategy<OBVResult> {
     calculate(data: PriceData[]): OBVResult[] {
-        const results: OBVResult[] = [];
-        let obv = 0;
+        const obvInput: OBVInput = {
+            close: data.map(d => d.close),
+            volume: data.map(d => d.volume || 0)
+        };
 
-        for (let i = 1; i < data.length; i++) {
-            const current = data[i];
-            const prev = data[i - 1];
-            if (current.close > prev.close) {
-                obv += current.volume || 0;
-            } else if (current.close < prev.close) {
-                obv -= current.volume || 0;
-            }
+        const obvValues = OBV.calculate(obvInput);
 
-            const trend = obv > (results[results.length - 1]?.obv || 0) ? "RISING" : obv < (results[results.length - 1]?.obv || 0) ? "FALLING" : "SIDEWAYS";
+        return obvValues.map((obv, index) => {
+            const trend = obv > (obvValues[index - 1] || 0) ? "RISING" : obv < (obvValues[index - 1] || 0) ? "FALLING" : "SIDEWAYS";
             const signal = trend === "RISING" ? "BUY" : trend === "FALLING" ? "SELL" : "HOLD";
             const strength = Math.abs(obv) > 100000 ? "STRONG" : Math.abs(obv) > 50000 ? "MODERATE" : "WEAK";
             const divergence: OBVResult["divergence"] = "NO_DIVERGENCE"; // Placeholder
 
-            results.push({ obv, trend, signal, strength, divergence });
-        }
-
-        return results;
+            return { obv, trend, signal, strength, divergence };
+        });
     }
 }

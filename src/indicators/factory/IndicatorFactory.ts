@@ -60,7 +60,7 @@ export class IndicatorFactory {
             case 'BOLLINGER_BANDS':
                 return new BollingerBandsIndicator(20, 2);
             case 'STOCHASTIC':
-                return new StochasticIndicator(14, 3, 3);
+                return new StochasticIndicator(14, 3);
             case 'WILLIAMS_R':
                 return new WilliamsRIndicator(14);
             case 'ATR':
@@ -103,8 +103,7 @@ export class IndicatorFactory {
             case 'STOCH':
                 return new StochasticIndicator(
                     params.kPeriod || 14,
-                    params.dPeriod || 3,
-                    params.slowing || 3
+                    params.dPeriod || 3
                 );
             case 'WILLIAMS_R':
             case 'WILLIAMS':

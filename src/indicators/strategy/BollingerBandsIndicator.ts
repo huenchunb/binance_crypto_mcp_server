@@ -1,5 +1,7 @@
 import { IndicatorStrategy } from './IndicatorStrategy';
 import { PriceData, BollingerBandsResult } from '../types/IndicatorTypes';
+import { BollingerBands } from 'technicalindicators';
+import { BollingerBandsInput } from 'technicalindicators/declarations/volatility/BollingerBands';
 
 export class BollingerBandsIndicator implements IndicatorStrategy<BollingerBandsResult> {
     constructor(
@@ -8,51 +10,36 @@ export class BollingerBandsIndicator implements IndicatorStrategy<BollingerBands
     ) { }
 
     calculate(data: PriceData[]): BollingerBandsResult[] {
-        const results: BollingerBandsResult[] = [];
+        const bbInput: BollingerBandsInput = {
+            period: this.period,
+            values: data.map(d => d.close),
+            stdDev: this.standardDeviations
+        };
 
-        for (let i = this.period; i < data.length; i++) {
-            const slice = data.slice(i - this.period, i + 1);
-            const closes = slice.map(d => d.close);
-            const currentPrice = closes[closes.length - 1];
+        const bbValues = BollingerBands.calculate(bbInput);
 
-            const middle = this.calculateSMA(closes);
-            const standardDeviation = this.calculateStandardDeviation(closes, middle);
+        return bbValues.map(bb => {
+            const currentPrice = data[data.length - bbValues.length].close;
+            const width = ((bb.upper - bb.lower) / bb.middle) * 100;
+            const percent_b = (currentPrice - bb.lower) / (bb.upper - bb.lower);
 
-            const upper = middle + (standardDeviation * this.standardDeviations);
-            const lower = middle - (standardDeviation * this.standardDeviations);
-
-            const width = ((upper - lower) / middle) * 100;
-            const percent_b = (currentPrice - lower) / (upper - lower);
-
-            const signal = this.determineSignal(currentPrice, upper, lower, width, percent_b);
-            const position = this.determinePosition(currentPrice, upper, lower, middle);
+            const signal = this.determineSignal(currentPrice, bb.upper, bb.lower, width, percent_b);
+            const position = this.determinePosition(currentPrice, bb.upper, bb.lower, bb.middle);
             const volatility = this.determineVolatility(width);
-            const squeeze_status = this.detectSqueeze(data.slice(0, i + 1), width);
+            const squeeze_status = this.detectSqueeze(data, width);
 
-            results.push({
-                middle: Number(middle.toFixed(6)),
-                upper: Number(upper.toFixed(6)),
-                lower: Number(lower.toFixed(6)),
-                width: Number(width.toFixed(4)),
-                percent_b: Number(percent_b.toFixed(4)),
+            return {
+                middle: bb.middle,
+                upper: bb.upper,
+                lower: bb.lower,
+                width: width,
+                percent_b: percent_b,
                 signal,
                 position,
                 volatility,
                 squeeze_status
-            });
-        }
-
-        return results;
-    }
-
-    private calculateSMA(prices: number[]): number {
-        return prices.reduce((sum, price) => sum + price, 0) / prices.length;
-    }
-
-    private calculateStandardDeviation(prices: number[], mean: number): number {
-        const squaredDifferences = prices.map(price => Math.pow(price - mean, 2));
-        const variance = squaredDifferences.reduce((sum, diff) => sum + diff, 0) / prices.length;
-        return Math.sqrt(variance);
+            };
+        });
     }
 
     private determineSignal(
@@ -139,5 +126,15 @@ export class BollingerBandsIndicator implements IndicatorStrategy<BollingerBands
         } else {
             return 'NORMAL';
         }
+    }
+
+    private calculateSMA(prices: number[]): number {
+        return prices.reduce((sum, price) => sum + price, 0) / prices.length;
+    }
+
+    private calculateStandardDeviation(prices: number[], mean: number): number {
+        const squaredDifferences = prices.map(price => Math.pow(price - mean, 2));
+        const variance = squaredDifferences.reduce((sum, diff) => sum + diff, 0) / prices.length;
+        return Math.sqrt(variance);
     }
 }

@@ -7,7 +7,6 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { BinanceClient } from './helpers/binance-client';
 import { PriceData } from './indicators/types/IndicatorTypes';
-import { TechnicalAnalysisEngine } from './indicators/engine/TechnicalAnalysisEngine';
 import { IndicatorFactory } from './indicators/factory/IndicatorFactory';
 
 class BinanceMCPServer {
@@ -137,30 +136,6 @@ class BinanceMCPServer {
                                 },
                             },
                             required: ['symbol'],
-                        },
-                    },
-                    {
-                        name: 'get_technical_analysis',
-                        description: 'Realiza un análisis técnico completo de una criptomoneda',
-                        inputSchema: {
-                            type: 'object',
-                            properties: {
-                                symbol: {
-                                    type: 'string',
-                                    description: 'Símbolo del par (ej: BTCUSDT)',
-                                },
-                                interval: {
-                                    type: 'string',
-                                    description: 'Intervalo (ej: 1h, 4h, 1d)',
-                                },
-                                output_mode: {
-                                    type: 'string',
-                                    enum: ['summary', 'full_data'],
-                                    description: 'Modo de salida: resumen o datos completos',
-                                    default: 'summary',
-                                },
-                            },
-                            required: ['symbol', 'interval']
                         },
                     },
                     {
@@ -421,45 +396,6 @@ class BinanceMCPServer {
                                             // Para datos completos, usar: full_data: extendedData.data
                                         },
                                     }, null, 2),
-                                },
-                            ],
-                        };
-                    }
-
-                    case 'get_technical_analysis': {
-                        const { symbol, interval = '1d', periods = 200, output_mode = 'summary' } = args as {
-                            symbol: string;
-                            interval?: '1h' | '4h' | '1d' | '1w' | '1M';
-                            periods?: number;
-                            output_mode?: 'summary' | 'full_data';
-                        };
-
-                        // Validar y ajustar parámetros
-                        const validPeriods = Math.min(Math.max(periods, 200), 500);
-
-                        // Obtener datos históricos para análisis técnico
-                        const historicalData = await this.binanceClient.getHistoricalData(
-                            symbol,
-                            interval,
-                            validPeriods
-                        );
-
-                        // Convertir datos al formato requerido por TechnicalIndicators
-                        const candles: PriceData[] = historicalData.map(kline => ({
-                            close: parseFloat(kline[4]),  // precio de cierre
-                            high: parseFloat(kline[2]),   // precio máximo
-                            low: parseFloat(kline[3]),    // precio mínimo
-                            volume: parseFloat(kline[5])  // volumen
-                        }));
-
-                        // Crear instancia del motor de análisis técnico
-                        const technicalAnalysis = TechnicalAnalysisEngine.performCompleteAnalysis(candles, symbol, output_mode);
-
-                        return {
-                            content: [
-                                {
-                                    type: 'text',
-                                    text: JSON.stringify(technicalAnalysis, null, 2),
                                 },
                             ],
                         };

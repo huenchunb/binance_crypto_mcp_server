@@ -8,4 +8,3 @@ export * from './strategy/OBVIndicator';
 export * from './strategy/RSIIndicator';
 export * from './strategy/VWAPIndicator';
 export * from './factory/IndicatorFactory';
-export * from './engine/TechnicalAnalysisEngine';

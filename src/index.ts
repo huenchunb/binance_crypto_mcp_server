@@ -467,7 +467,7 @@ class BinanceMCPServer {
                     case 'get_indicator_values': {
                         const { symbol, interval = '1d', indicators, periods = 200 } = args as {
                             symbol: string;
-                            interval?: '1h' | '4h' | '1d' | '1w' | '1M';
+                            interval?: '30m' | '1h' | '4h' | '1d' | '1w' | '1M';
                             indicators: string[];
                             periods?: number;
                         };
@@ -515,7 +515,8 @@ class BinanceMCPServer {
                     content: [
                         {
                             type: 'text',
-                            text: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,}
+                            text: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+                        }
                     ],
                     isError: true,
                 };

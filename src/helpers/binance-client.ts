@@ -205,7 +205,7 @@ export class BinanceClient {
    */
     async getHistoricalData(
         symbol: string,
-        interval: '1h' | '4h' | '1d' | '1w' | '1M',
+        interval: '30m' | '1h' | '4h' | '1d' | '1w' | '1M',
         limit: number = 1000
     ): Promise<KlineData[]> {
         try {

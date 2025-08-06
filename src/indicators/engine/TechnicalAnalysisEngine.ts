@@ -10,9 +10,7 @@ import {
   BollingerBandsResult,
   StochasticResult,
   WilliamsRResult,
-  RSIResult,
-  MACDResult,
-  MovingAverageResult
+  RSIResult
 } from '../types/IndicatorTypes';
 
 export class TechnicalAnalysisEngine {

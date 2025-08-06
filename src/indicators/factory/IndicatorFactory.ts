@@ -10,6 +10,13 @@ import { BollingerBandsIndicator } from '../strategy/BollingerBandsIndicator';
 import { StochasticIndicator } from '../strategy/StochasticIndicator';
 import { WilliamsRIndicator } from '../strategy/WilliamsRIndicator';
 import { ATRIndicator } from '../strategy/ATRIndicator';
+import { ADXIndicator } from '../strategy/ADXIndicator';
+import { IchimokuCloudIndicator } from '../strategy/IchimokuCloudIndicator';
+import { ParabolicSARIndicator } from '../strategy/ParabolicSARIndicator';
+import { StochasticRSIIndicator } from '../strategy/StochasticRSIIndicator';
+import { AwesomeOscillatorIndicator } from '../strategy/AwesomeOscillatorIndicator';
+import { ForceIndexIndicator } from '../strategy/ForceIndexIndicator';
+import { KeltnerChannelIndicator } from '../strategy/KeltnerChannelIndicator';
 
 import {
     RSIResult,
@@ -22,7 +29,14 @@ import {
     BollingerBandsResult,
     StochasticResult,
     WilliamsRResult,
-    ATRResult
+    ATRResult,
+    ADXResult,
+    IchimokuCloudResult,
+    ParabolicSARResult,
+    StochasticRSIResult,
+    AwesomeOscillatorResult,
+    ForceIndexResult,
+    KeltnerChannelResult
 } from '../types/IndicatorTypes';
 
 export class IndicatorFactory {
@@ -37,6 +51,13 @@ export class IndicatorFactory {
     static create(type: 'STOCHASTIC'): IndicatorStrategy<StochasticResult>;
     static create(type: 'WILLIAMS_R'): IndicatorStrategy<WilliamsRResult>;
     static create(type: 'ATR'): IndicatorStrategy<ATRResult>;
+    static create(type: 'ADX'): IndicatorStrategy<ADXResult>;
+    static create(type: 'ICHIMOKU_CLOUD'): IndicatorStrategy<IchimokuCloudResult>;
+    static create(type: 'PARABOLIC_SAR'): IndicatorStrategy<ParabolicSARResult>;
+    static create(type: 'STOCHASTIC_RSI'): IndicatorStrategy<StochasticRSIResult>;
+    static create(type: 'AWESOME_OSCILLATOR'): IndicatorStrategy<AwesomeOscillatorResult>;
+    static create(type: 'FORCE_INDEX'): IndicatorStrategy<ForceIndexResult>;
+    static create(type: 'KELTNER_CHANNEL'): IndicatorStrategy<KeltnerChannelResult>;
     static create(type: string): IndicatorStrategy<any> {
         switch (type.toUpperCase()) {
             case 'RSI':
@@ -65,6 +86,20 @@ export class IndicatorFactory {
                 return new WilliamsRIndicator(14);
             case 'ATR':
                 return new ATRIndicator(14);
+            case 'ADX':
+                return new ADXIndicator(14);
+            case 'ICHIMOKU_CLOUD':
+                return new IchimokuCloudIndicator();
+            case 'PARABOLIC_SAR':
+                return new ParabolicSARIndicator();
+            case 'STOCHASTIC_RSI':
+                return new StochasticRSIIndicator();
+            case 'AWESOME_OSCILLATOR':
+                return new AwesomeOscillatorIndicator();
+            case 'FORCE_INDEX':
+                return new ForceIndexIndicator();
+            case 'KELTNER_CHANNEL':
+                return new KeltnerChannelIndicator();
             default:
                 throw new Error(`Unsupported indicator type: ${type}`);
         }
@@ -111,6 +146,45 @@ export class IndicatorFactory {
                 return new WilliamsRIndicator(params.period || 14);
             case 'ATR':
                 return new ATRIndicator(params.period || 14);
+            case 'ADX':
+                return new ADXIndicator(params.period || 14);
+            case 'ICHIMOKU_CLOUD':
+                return new IchimokuCloudIndicator(
+                    params.conversionPeriod || 9,
+                    params.basePeriod || 26,
+                    params.spanPeriod || 52,
+                    params.displacement || 26
+                );
+            case 'PARABOLIC_SAR':
+            case 'PSAR':
+                return new ParabolicSARIndicator(
+                    params.step || 0.02,
+                    params.max || 0.2
+                );
+            case 'STOCHASTIC_RSI':
+            case 'STOCHRSI':
+                return new StochasticRSIIndicator(
+                    params.rsiPeriod || 14,
+                    params.stochasticPeriod || 14,
+                    params.kPeriod || 3,
+                    params.dPeriod || 3
+                );
+            case 'AWESOME_OSCILLATOR':
+            case 'AO':
+                return new AwesomeOscillatorIndicator(
+                    params.fastPeriod || 5,
+                    params.slowPeriod || 34
+                );
+            case 'FORCE_INDEX':
+            case 'FI':
+                return new ForceIndexIndicator(params.period || 1);
+            case 'KELTNER_CHANNEL':
+            case 'KC':
+                return new KeltnerChannelIndicator(
+                    params.period || 20,
+                    params.multiplier || 2,
+                    params.atrPeriod || 10
+                );
 
             default:
                 return this.create(type as any);
@@ -134,7 +208,14 @@ export class IndicatorFactory {
             'BOLLINGER_BANDS',
             'STOCHASTIC',
             'WILLIAMS_R',
-            'ATR'
+            'ATR',
+            'ADX',
+            'ICHIMOKU_CLOUD',
+            'PARABOLIC_SAR',
+            'STOCHASTIC_RSI',
+            'AWESOME_OSCILLATOR',
+            'FORCE_INDEX',
+            'KELTNER_CHANNEL'
         ];
     }
 
@@ -185,6 +266,64 @@ export class IndicatorFactory {
                     outputRange: '0 to infinity',
                     signals: ['HIGH_VOLATILITY', 'LOW_VOLATILITY', 'NEUTRAL'],
                     characteristics: ['Volatility indicator', 'Not directional']
+                };
+            case 'ADX':
+                return {
+                    name: 'Average Directional Index',
+                    description: 'Mide la fuerza de la tendencia',
+                    defaultParams: { period: 14 },
+                    outputRange: '0-100',
+                    signals: ['STRONG_TREND (>25)', 'WEAK_TREND (<20)', 'NO_TREND'],
+                    components: ['ADX', '+DI', '-DI']
+                };
+            case 'ICHIMOKU_CLOUD':
+                return {
+                    name: 'Ichimoku Cloud',
+                    description: 'Indicador completo que muestra soporte/resistencia, tendencia y señales',
+                    defaultParams: { conversionPeriod: 9, basePeriod: 26, spanPeriod: 52, displacement: 26 },
+                    signals: ['BULLISH_CROSS', 'BEARISH_CROSS', 'CLOUD_BREAKOUT'],
+                    components: ['Tenkan-sen (Conversion Line)', 'Kijun-sen (Base Line)', 'Senkou Span A (Leading Span A)', 'Senkou Span B (Leading Span B)', 'Chikou Span (Lagging Span)']
+                };
+            case 'PARABOLIC_SAR':
+                return {
+                    name: 'Parabolic SAR',
+                    description: 'Identifica posibles reversiones de tendencia',
+                    defaultParams: { step: 0.02, max: 0.2 },
+                    signals: ['BUY_SIGNAL (dots below price)', 'SELL_SIGNAL (dots above price)'],
+                    characteristics: ['Trailing stop-loss', 'Trend following']
+                };
+            case 'STOCHASTIC_RSI':
+                return {
+                    name: 'Stochastic RSI',
+                    description: 'Mide el nivel de RSI en relación con su rango alto/bajo durante un período de tiempo',
+                    defaultParams: { rsiPeriod: 14, stochasticPeriod: 14, kPeriod: 3, dPeriod: 3 },
+                    outputRange: '0-100',
+                    signals: ['OVERSOLD (<20)', 'OVERBOUGHT (>80)'],
+                    components: ['%K', '%D']
+                };
+            case 'AWESOME_OSCILLATOR':
+                return {
+                    name: 'Awesome Oscillator',
+                    description: 'Mide el momentum del mercado',
+                    defaultParams: { fastPeriod: 5, slowPeriod: 34 },
+                    signals: ['BULLISH_SAUCER', 'BEARISH_SAUCER', 'ZERO_LINE_CROSSOVER'],
+                    characteristics: ['Momentum indicator', 'Histogram']
+                };
+            case 'FORCE_INDEX':
+                return {
+                    name: 'Force Index',
+                    description: 'Mide la fuerza de los movimientos de precios incorporando el volumen',
+                    defaultParams: { period: 1 },
+                    signals: ['BULLISH_FORCE', 'BEARISH_FORCE'],
+                    characteristics: ['Volume indicator', 'Trend confirmation']
+                };
+            case 'KELTNER_CHANNEL':
+                return {
+                    name: 'Keltner Channel',
+                    description: 'Bandas de volatilidad que usan ATR para identificar tendencias y reversiones',
+                    defaultParams: { period: 20, multiplier: 2, atrPeriod: 10 },
+                    signals: ['BREAKOUT_UPPER', 'BREAKOUT_LOWER', 'REVERSION_TO_MEAN'],
+                    components: ['Middle Line (EMA)', 'Upper Band', 'Lower Band']
                 };
             default:
                 return null;

@@ -95,6 +95,51 @@ export interface ATRResult {
     signal: 'HIGH_VOLATILITY' | 'LOW_VOLATILITY' | 'NEUTRAL';
 }
 
+export interface ADXResult {
+    adx: number;
+    pdi: number;
+    mdi: number;
+    trend: 'STRONG' | 'WEAK' | 'NO_TREND';
+}
+
+export interface IchimokuCloudResult {
+    conversion: number;
+    base: number;
+    spanA: number;
+    spanB: number;
+    signal: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+}
+
+export interface ParabolicSARResult {
+    psar: number;
+    trend: 'BULLISH' | 'BEARISH';
+    reversal: boolean;
+}
+
+export interface StochasticRSIResult {
+    stochRSI: number;
+    k: number;
+    d: number;
+    signal: 'OVERSOLD' | 'OVERBOUGHT' | 'NEUTRAL';
+}
+
+export interface AwesomeOscillatorResult {
+    ao: number;
+    trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+}
+
+export interface ForceIndexResult {
+    fi: number;
+    trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+}
+
+export interface KeltnerChannelResult {
+    middle: number;
+    upper: number;
+    lower: number;
+    signal: 'OVERSOLD' | 'OVERBOUGHT' | 'NEUTRAL';
+}
+
 export interface TechnicalAnalysisResult {
     symbol: string;
     timestamp: string;
@@ -113,6 +158,14 @@ export interface TechnicalAnalysisResult {
     bollingerBands: BollingerBandsResult;
     stochastic: StochasticResult;
     williamsR: WilliamsRResult;
+    atr: ATRResult;
+    adx: ADXResult;
+    ichimokuCloud: IchimokuCloudResult;
+    parabolicSAR: ParabolicSARResult;
+    stochasticRSI: StochasticRSIResult;
+    awesomeOscillator: AwesomeOscillatorResult;
+    forceIndex: ForceIndexResult;
+    keltnerChannel: KeltnerChannelResult;
     overallSignal: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL';
     confidence: number;
     volumeConfirmation: boolean;
@@ -129,4 +182,12 @@ export interface TechnicalAnalysisResult {
     bollingerBandsData?: BollingerBandsResult[];
     stochasticData?: StochasticResult[];
     williamsRData?: WilliamsRResult[];
+    atrData?: ATRResult[];
+    adxData?: ADXResult[];
+    ichimokuCloudData?: IchimokuCloudResult[];
+    parabolicSARData?: ParabolicSARResult[];
+    stochasticRSIData?: StochasticRSIResult[];
+    awesomeOscillatorData?: AwesomeOscillatorResult[];
+    forceIndexData?: ForceIndexResult[];
+    keltnerChannelData?: KeltnerChannelResult[];
 }

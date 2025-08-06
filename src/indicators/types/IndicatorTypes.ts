@@ -90,6 +90,11 @@ export interface WilliamsRResult {
     divergence: 'BULLISH_DIVERGENCE' | 'BEARISH_DIVERGENCE' | 'NO_DIVERGENCE';
 }
 
+export interface ATRResult {
+    atr: number;
+    signal: 'HIGH_VOLATILITY' | 'LOW_VOLATILITY' | 'NEUTRAL';
+}
+
 export interface TechnicalAnalysisResult {
     symbol: string;
     timestamp: string;

@@ -9,6 +9,7 @@ import { MovingAverageIndicator } from '../strategy/MovingAverageIndicator';
 import { BollingerBandsIndicator } from '../strategy/BollingerBandsIndicator';
 import { StochasticIndicator } from '../strategy/StochasticIndicator';
 import { WilliamsRIndicator } from '../strategy/WilliamsRIndicator';
+import { ATRIndicator } from '../strategy/ATRIndicator';
 
 import {
     RSIResult,
@@ -20,7 +21,8 @@ import {
     MovingAverageResult,
     BollingerBandsResult,
     StochasticResult,
-    WilliamsRResult
+    WilliamsRResult,
+    ATRResult
 } from '../types/IndicatorTypes';
 
 export class IndicatorFactory {
@@ -34,6 +36,7 @@ export class IndicatorFactory {
     static create(type: 'BOLLINGER_BANDS'): IndicatorStrategy<BollingerBandsResult>;
     static create(type: 'STOCHASTIC'): IndicatorStrategy<StochasticResult>;
     static create(type: 'WILLIAMS_R'): IndicatorStrategy<WilliamsRResult>;
+    static create(type: 'ATR'): IndicatorStrategy<ATRResult>;
     static create(type: string): IndicatorStrategy<any> {
         switch (type.toUpperCase()) {
             case 'RSI':
@@ -60,6 +63,8 @@ export class IndicatorFactory {
                 return new StochasticIndicator(14, 3, 3);
             case 'WILLIAMS_R':
                 return new WilliamsRIndicator(14);
+            case 'ATR':
+                return new ATRIndicator(14);
             default:
                 throw new Error(`Unsupported indicator type: ${type}`);
         }
@@ -105,6 +110,8 @@ export class IndicatorFactory {
             case 'WILLIAMS':
             case 'WR':
                 return new WilliamsRIndicator(params.period || 14);
+            case 'ATR':
+                return new ATRIndicator(params.period || 14);
 
             default:
                 return this.create(type as any);
@@ -127,7 +134,8 @@ export class IndicatorFactory {
             'MA200',
             'BOLLINGER_BANDS',
             'STOCHASTIC',
-            'WILLIAMS_R'
+            'WILLIAMS_R',
+            'ATR'
         ];
     }
 
@@ -169,6 +177,15 @@ export class IndicatorFactory {
                     outputRange: '-100 to 0',
                     signals: ['OVERSOLD (<-80)', 'OVERBOUGHT (>-20)', 'REVERSALS'],
                     characteristics: ['Inverted scale', 'Leading indicator', 'Divergence detection']
+                };
+            case 'ATR':
+                return {
+                    name: 'Average True Range',
+                    description: 'Indicador de volatilidad que mide el rango promedio verdadero',
+                    defaultParams: { period: 14 },
+                    outputRange: '0 to infinity',
+                    signals: ['HIGH_VOLATILITY', 'LOW_VOLATILITY', 'NEUTRAL'],
+                    characteristics: ['Volatility indicator', 'Not directional']
                 };
             default:
                 return null;

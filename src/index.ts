@@ -181,6 +181,7 @@ class BinanceMCPServer {
                                     type: 'array',
                                     items: {
                                         type: 'string',
+                                        enum: IndicatorFactory.getAvailableIndicators(),
                                     },
                                     description: 'Array de indicadores a calcular (ej: ["RSI", "MACD"])',
                                 },
